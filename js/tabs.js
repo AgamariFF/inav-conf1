@@ -24,4 +24,4 @@
 
 })();
 
-export default tabs;
+module.exports = tabs;

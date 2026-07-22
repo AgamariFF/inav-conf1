@@ -303,4 +303,4 @@ var FLIGHT_MODES = [
     }
 ];
 
-export { FLIGHT_MODES };
+module.exports = {FLIGHT_MODES};

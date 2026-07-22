@@ -1,21 +1,21 @@
 'use strict';
 
-import ServoMixerRuleCollection from './servoMixerRuleCollection';
-import MotorMixerRuleCollection from './motorMixerRuleCollection';
-import LogicConditionsCollection from './logicConditionsCollection';
-import LogicConditionsStatus from './logicConditionsStatus';
-import GlobalVariablesStatus from './globalVariablesStatus';
-import ProgrammingPidCollection from './programmingPidCollection';
-import ProgrammingPidStatus from './programmingPidStatus';
-import WaypointCollection from './waypointCollection';
-import OutputMappingCollection from './outputMapping';
-import SafehomeCollection from './safehomeCollection';
-import FwApproachCollection from './fwApproachCollection';
-import GeozoneCollection from './geozoneCollection';
-import { PLATFORM } from './model';
-import VTX from './vtx';
-import BitHelper from './bitHelper';
-import { FLIGHT_MODES } from './flightModes';
+const ServoMixerRuleCollection = require('./servoMixerRuleCollection');
+const MotorMixerRuleCollection = require('./motorMixerRuleCollection');
+const LogicConditionsCollection = require('./logicConditionsCollection');
+const LogicConditionsStatus = require('./logicConditionsStatus');
+const GlobalVariablesStatus = require('./globalVariablesStatus');
+const ProgrammingPidCollection = require('./programmingPidCollection');
+const ProgrammingPidStatus = require('./programmingPidStatus');
+const WaypointCollection = require('./waypointCollection');
+const OutputMappingCollection = require('./outputMapping');
+const SafehomeCollection = require('./safehomeCollection');
+const FwApproachCollection = require('./fwApproachCollection');
+const GeozoneCollection = require('./geozoneCollection');
+const { PLATFORM } = require('./model')
+const VTX = require('./vtx');
+const BitHelper = require('./bitHelper');
+const { FLIGHT_MODES } = require('./flightModes');
 
 
 var FC = {
@@ -278,8 +278,7 @@ var FC = {
             messageDt: 0,
             errors: 0,
             timeouts: 0,
-            packetCount: 0,
-            hwVersion: 0
+            packetCount: 0
         };
         
         this.ADSB_VEHICLES = {
@@ -357,10 +356,6 @@ var FC = {
             power: 0,
             pitmode: 0,
             low_power_disarm: 0,
-            band_count: 0,
-            channel_count: 0,
-            power_count: 0,
-            power_min: 1,
         };
 
         this.ADVANCED_CONFIG = {
@@ -941,7 +936,7 @@ var FC = {
             'Stabilized Pitch-',    // 26
             'Stabilized Yaw+',      // 27
             'Stabilized Yaw-',      // 28,
-            'Fixed Value',          // 29,
+            'MAX',                  // 29,
             'GVAR 0',               // 30
             'GVAR 1',               // 31
             'GVAR 2',               // 32
@@ -1002,7 +997,7 @@ var FC = {
             'battery_capacity_warning',
             'battery_capacity_critical',
             'battery_capacity_unit',
-            'use_control_profile',
+            'controlrate_profile',
             'throttle_scale',
             'throttle_idle',
             'turtle_mode_power_factor',
@@ -1146,4 +1141,4 @@ var FC = {
     }
 };
 
-export default FC;
+module.exports = FC;

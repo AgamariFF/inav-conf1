@@ -1,23 +1,24 @@
 'use strict';
 
-import MSPChainerClass from './../js/msp/MSPchainer';
-import mspHelper from './../js/msp/MSPHelper';
-import MSPCodes from './../js/msp/MSPCodes';
-import MSP from './../js/msp';
-import GUI from './../js/gui';
-import FC from './../js/fc';
-import i18n from './../js/localization';
-import { mixer, platform, PLATFORM, INPUT, STABILIZED } from './../js/model';
-import Settings from './../js/settings';
-import jBox from 'jbox';
-import interval from './../js/intervals';
-import ServoMixRule from './../js/servoMixRule';
-import MotorMixRule from './../js/motorMixRule';
-import BitHelper from './../js/bitHelper';
+const path = require('path');
 
-const mixerTab = {};
+const MSPChainerClass = require('./../js/msp/MSPchainer');
+const mspHelper = require('./../js/msp/MSPHelper');
+const MSPCodes = require('./../js/msp/MSPCodes');
+const MSP = require('./../js/msp');
+const { GUI, TABS } = require('./../js/gui');
+const FC = require('./../js/fc');
+const i18n = require('./../js/localization');
+const { mixer, platform, PLATFORM, INPUT, STABILIZED } = require('./../js/model');
+const Settings = require('./../js/settings');
+const jBox = require('../js/libraries/jBox/jBox.min');
+const interval = require('./../js/intervals');
+const ServoMixRule = require('./../js/servoMixRule');
+const MotorMixRule = require('./../js/motorMixRule');
 
-mixerTab.initialize = function (callback, scrollPosition) {
+TABS.mixer = {};
+
+TABS.mixer.initialize = function (callback, scrollPosition) {
 
     let loadChainer = new MSPChainerClass(),
         saveChainer = new MSPChainerClass(),
@@ -31,8 +32,8 @@ mixerTab.initialize = function (callback, scrollPosition) {
         modal,
         motorWizardModal;
 
-    if (GUI.active_tab !== this) {
-        GUI.active_tab = this;
+    if (GUI.active_tab != 'mixer') {
+        GUI.active_tab = 'mixer';
     }
 
     loadChainer.setChain([
@@ -78,7 +79,7 @@ mixerTab.initialize = function (callback, scrollPosition) {
     }
 
     function loadHtml() {
-        import('./mixer.html?raw').then(({default: html}) => GUI.load(html, Settings.processHtml(processHtml)));
+        GUI.load(path.join(__dirname, "mixer.html"), Settings.processHtml(processHtml));
     }
 
     function renderOutputTable() {
@@ -409,9 +410,9 @@ mixerTab.initialize = function (callback, scrollPosition) {
 
     function updateFixedValueVisibility(row, $mixRuleInput) {
 
-        // Show the fixed value input box if "Fixed Value" input was selected for this servo
+        // Show the fixed value input box if "MAX" input was selected for this servo
         const $fixedValueCalcInput = row.find(".mix-rule-fixed-value");
-        if (FC.getServoMixInputNames()[$mixRuleInput.val()] === 'Fixed Value') {
+        if (FC.getServoMixInputNames()[$mixRuleInput.val()] === 'MAX') {
             $fixedValueCalcInput.show();
         } else {
             $fixedValueCalcInput.hide();
@@ -423,7 +424,7 @@ mixerTab.initialize = function (callback, scrollPosition) {
         const rules = FC.SERVO_RULES.get();
         for (let servoRuleIndex in rules) {
             if (rules.hasOwnProperty(servoRuleIndex)) {
-                if (FC.getServoMixInputNames()[rules[servoRuleIndex].getInput()] === 'Fixed Value') {
+                if (FC.getServoMixInputNames()[rules[servoRuleIndex].getInput()] === 'MAX') {
                     $fixedValueCol.show();
                     return;
                 }
@@ -448,18 +449,10 @@ mixerTab.initialize = function (callback, scrollPosition) {
             rules = currentMixerPreset.motorMixer;
         }
 
-        if (currentMixerPreset.image != 'quad_x' && currentMixerPreset.image != 'quad_p') {
+        if (currentMixerPreset.image != 'quad_x') {
             for (let i = 1; i < 5; i++) {
                 $("#motorNumber"+i).css("visibility", "hidden");
             }
-        }
-
-        const $img = $("#motor-mixer-preview-img");
-        const imgHeight = $img.height();
-
-        // Skip positioning if image hasn't loaded yet (height would be 0)
-        if (imgHeight === 0) {
-            return;
         }
 
         for (const i in rules) {
@@ -467,30 +460,19 @@ mixerTab.initialize = function (callback, scrollPosition) {
                 const rule = rules[i];
                 index++;
 
-                if (currentMixerPreset.image != 'quad_x' && currentMixerPreset.image != 'quad_p') {
+                if (currentMixerPreset.image != 'quad_x') {
                     continue;
                 }
 
-                let top_px = 28;
+                let top_px = 30;
                 let left_px = 28;
-
-                const roll = rule.getRoll();
-                const pitch = rule.getPitch();
-
-                if (Math.abs(roll) < 0.1) {
-                    // Center horizontally (Plus: front/rear motors)
-                    left_px = ($img.width() - 14) / 2;
-                } else if (roll < -0.5) {
-                    left_px = $img.width() - 42;
+                if (rule.getRoll() < -0.5) {
+                  left_px = $("#motor-mixer-preview-img").width() - 42;
                 }
 
-                if (Math.abs(pitch) < 0.1) {
-                    // Center vertically (Plus: left/right motors)
-                    top_px = (imgHeight - 14) / 2;
-                } else if (pitch > 0.5) {
-                    top_px = imgHeight - 44;
+                if (rule.getPitch() > 0.5) {
+                  top_px = $("#motor-mixer-preview-img").height() - 42;
                 }
-
                 $("#motorNumber"+index).css("left", left_px + "px");
                 $("#motorNumber"+index).css("top", top_px + "px");
                 $("#motorNumber"+index).removeClass("is-hidden");
@@ -581,7 +563,7 @@ mixerTab.initialize = function (callback, scrollPosition) {
         saveChainer.execute();
     }
 
-    function processHtml(settingsPromise) {
+    function processHtml() {
 
         $servoMixTable = $('#servo-mix-table');
         $servoMixTableBody = $servoMixTable.find('tbody');
@@ -606,8 +588,8 @@ mixerTab.initialize = function (callback, scrollPosition) {
             $wizardButton = $("#mixer-wizard");
 
         motorWizardModal = new jBox('Modal', {
-            width: 500,
-            height: 560,
+            width: 480,
+            height: 410,
             closeButton: 'title',
             animation: false,
             attach: $wizardButton,
@@ -615,217 +597,45 @@ mixerTab.initialize = function (callback, scrollPosition) {
             content: $('#mixerWizardContent')
         });
 
-        // SVG arm-tip positions (200×200 viewbox px) keyed by preset image name.
-        // Index i corresponds to motorMixer[i] — the physical arm for that mixer slot.
-        // Coordinates match the motor numbering shown in resources/motor_order/*.svg.
-        // Presets with coaxial stacked motors (octo_x8, y4, y6) are intentionally
-        // omitted — multiple motors share the same physical position, making visual
-        // identification ambiguous.
-        const WIZARD_MOTOR_POSITIONS = {
-            'quad_x':      [{x:160,y:160},{x:160,y:40},{x:40,y:160},{x:40,y:40}],
-            'quad_p':      [{x:100,y:160},{x:160,y:100},{x:40,y:100},{x:100,y:40}],
-            'vtail_quad':  [{x:140,y:160},{x:160,y:40},{x:60,y:160},{x:40,y:40}],
-            'atail_quad':  [{x:60,y:160},{x:160,y:40},{x:140,y:160},{x:40,y:40}],
-            'hex_x':       [{x:130,y:48},{x:160,y:100},{x:130,y:152},{x:70,y:152},{x:40,y:100},{x:70,y:48}],
-            'hex_p':       [{x:100,y:40},{x:152,y:70},{x:152,y:130},{x:100,y:160},{x:48,y:130},{x:48,y:70}],
-            'octo_flat_x': [{x:127,y:35},{x:165,y:73},{x:165,y:127},{x:127,y:165},{x:73,y:165},{x:35,y:127},{x:35,y:73},{x:73,y:35}],
-            'octo_flat_p': [{x:100,y:30},{x:150,y:51},{x:170,y:100},{x:150,y:150},{x:100,y:170},{x:51,y:150},{x:30,y:100},{x:51,y:51}],
-            'tri':         [{x:100,y:160},{x:160,y:40},{x:40,y:40}],
-        };
+        function validateMixerWizard() {
+            let errorCount = 0;
+            for (let i = 0; i < 4; i++) {
+                const $elements = $('[data-motor] option:selected[id=' + i + ']'),
+                    assignedRulesCount = $elements.length;
 
-        // Motor Wizard State Machine
-        const wizardState = {
-            currentMotor: 0,        // Which motor we're currently locating
-            motorPositions: {},     // Map: motorIndex -> positionIndex
-            locateInterval: null,   // Interval for repeating locate command
-            isActive: false,        // Is wizard in progress?
-            savedDshotBeeper: null  // Original dshot_beeper_enabled value to restore
-        };
-
-        function sendMotorValues(motorIndex, value) {
-            var buffer = [];
-            for (var i = 0; i < 8; i++) {
-                var val = (i === motorIndex) ? value : FC.MISC.mincommand;
-                buffer.push(BitHelper.lowByte(val));
-                buffer.push(BitHelper.highByte(val));
-            }
-            MSP.send_message(MSPCodes.MSP_SET_MOTOR, buffer);
-        }
-
-        function stopMotors() {
-            if (wizardState.locateInterval) {
-                clearInterval(wizardState.locateInterval);
-                wizardState.locateInterval = null;
-            }
-            sendMotorValues(-1, FC.MISC.mincommand);  // All motors at mincommand
-        }
-
-        function resetWizard(numMotors) {
-            wizardState.currentMotor = 0;
-            wizardState.motorPositions = {};
-            wizardState.isActive = false;
-
-            stopMotors();
-
-            $('#wizard-intro').removeClass('is-hidden');
-            $('#wizard-progress').addClass('is-hidden');
-            $('#wizard-complete').addClass('is-hidden');
-
-            // Regenerate progress steps for this motor count
-            const $bar = $('.wizard-progress-bar').empty();
-            for (let i = 0; i < numMotors; i++) {
-                $bar.append(`<div class="wizard-progress-step" data-step="${i}">${i + 1}</div>`);
-            }
-        }
-
-        function buildPositionButtons(positions) {
-            const $preview = $('.wizard-motor-preview');
-            $preview.find('.wizard-position-btn').remove();
-            // Button is 36×36px; offset by half to center it on the SVG coordinate
-            const HALF = 18;
-            positions.forEach((pos, i) => {
-                $preview.append(
-                    `<div class="wizard-position-btn" id="wizardPos${i}" data-position="${i}"
-                          style="left:${pos.x - HALF}px;top:${pos.y - HALF}px">
-                         <span class="position-label"></span>
-                     </div>`
-                );
-            });
-        }
-
-        function updateWizardProgress(motorIndex) {
-            $('#wizard-current-motor').text(motorIndex + 1);
-
-            $('.wizard-progress-step').each(function() {
-                const step = parseInt($(this).attr('data-step'), 10);
-                $(this).removeClass('active complete');
-                if (step < motorIndex) {
-                    $(this).addClass('complete');
-                } else if (step === motorIndex) {
-                    $(this).addClass('active');
+                if (assignedRulesCount != 1) {
+                    errorCount++;
+                    $elements.closest('tr').addClass("red-background");
+                } else {
+                    $elements.closest('tr').removeClass("red-background");
                 }
-            });
 
-            $('.wizard-position-btn').each(function() {
-                const pos = parseInt($(this).attr('data-position'), 10);
-                const isAssigned = Object.values(wizardState.motorPositions).includes(pos);
-                if (!isAssigned) {
-                    $(this).addClass('waiting');
-                }
-            });
-        }
-
-        function startMotorPulse(motorIndex) {
-            // Three short twitches with a pause, repeating
-            // ON 20ms, OFF 20ms, ON 20ms, OFF 20ms, ON 20ms, OFF 700ms (800ms cycle)
-            // Safety: every tick defaults to OFF unless inside an ON window
-            var spinValue = Math.round(FC.MISC.mincommand + 0.15 * (FC.MISC.maxthrottle - FC.MISC.mincommand));
-            var stopped = FC.MISC.mincommand;
-            var startTime = Date.now();
-            var CYCLE = 800;
-
-            sendMotorValues(motorIndex, spinValue);
-            wizardState.locateInterval = setInterval(function() {
-                var elapsed = (Date.now() - startTime) % CYCLE;
-                // ON windows: [0,20), [40,60), [80,100)
-                var isOn = (elapsed < 20) || (elapsed >= 40 && elapsed < 60) || (elapsed >= 80 && elapsed < 100);
-                sendMotorValues(motorIndex, isOn ? spinValue : stopped);
-            }, 10);
-        }
-
-        function startLocatingMotor(motorIndex) {
-            updateWizardProgress(motorIndex);
-            stopMotors();
-            startMotorPulse(motorIndex);
-        }
-
-        function onPositionClicked(positionIndex) {
-            if (!wizardState.isActive) return;
-
-            stopMotors();
-
-            // Record this motor's position
-            wizardState.motorPositions[wizardState.currentMotor] = positionIndex;
-
-            // Update the button to show the motor number
-            const $btn = $(`#wizardPos${positionIndex}`);
-            $btn.removeClass('waiting').addClass('assigned');
-            $btn.find('.position-label').text(wizardState.currentMotor + 1);
-
-            // Remove waiting state from all buttons
-            $('.wizard-position-btn').removeClass('waiting');
-
-            // Move to next motor or complete
-            wizardState.currentMotor++;
-
-            if (wizardState.currentMotor >= currentMixerPreset.motorMixer.length) {
-                // All motors identified
-                wizardComplete();
-            } else {
-                // Start locating next motor
-                startLocatingMotor(wizardState.currentMotor);
             }
+            return (errorCount == 0);
         }
 
-        function wizardComplete() {
-            wizardState.isActive = false;
+        $(".wizard-motor-select").on('change', validateMixerWizard);
 
-            // Mark all progress steps complete
-            $('.wizard-progress-step').removeClass('active').addClass('complete');
+        $("#wizard-execute-button").on('click', function () {
 
-            $('#wizard-progress').addClass('is-hidden');
-            $('#wizard-complete').removeClass('is-hidden');
-        }
+            // Validate mixer settings
+            if (!validateMixerWizard()) {
+                return;
+            }
 
-        // Position button click handler — delegated so it works on dynamically generated buttons
-        $('.wizard-motor-preview').on('click', '.wizard-position-btn', function() {
-            if (!$(this).hasClass('waiting')) return;
-            const positionIndex = parseInt($(this).attr('data-position'), 10);
-            onPositionClicked(positionIndex);
-        });
-
-        // Start button click handler
-        $('#wizard-start-button').on('click', function() {
-            if (wizardState.isActive) return;
-            wizardState.isActive = true;
-            wizardState.currentMotor = 0;
-            wizardState.motorPositions = {};
-
-            $('#wizard-intro').addClass('is-hidden');
-            $('#wizard-progress').removeClass('is-hidden');
-
-            // Disable DShot beeper so it doesn't twitch all motors during locate
-            mspHelper.getSetting('dshot_beeper_enabled').then(function(setting) {
-                if (setting) {
-                    wizardState.savedDshotBeeper = setting.value;
-                    if (setting.value) {
-                        mspHelper.setSetting('dshot_beeper_enabled', 0, function() {
-                            startLocatingMotor(0);
-                        });
-                        return;
-                    }
-                }
-                startLocatingMotor(0);
-            }).catch(function() {
-                startLocatingMotor(0);
-            });
-        });
-
-        // Emergency stop button click handler
-        $('#wizard-stop-button').on('click', function() {
-            stopMotors();
-            motorWizardModal.close();
-        });
-
-        // Apply button click handler
-        $('#wizard-apply-button').on('click', function() {
-            // Build motor rules from wizard results
             FC.MOTOR_RULES.flush();
 
-            const numMotors = currentMixerPreset.motorMixer.length;
-            for (let motorIndex = 0; motorIndex < numMotors; motorIndex++) {
-                const positionIndex = wizardState.motorPositions[motorIndex];
-                const r = currentMixerPreset.motorMixer[positionIndex];
+            for (let i = 0; i < 4; i++) {
+                const $selects = $(".wizard-motor-select");
+                let rule = -1;
+
+                $selects.each(function () {
+                    if (parseInt($(this).find(":selected").attr("id"), 10) == i) {
+                        rule = parseInt($(this).attr("data-motor"), 10);
+                    }
+                });
+
+                const r = currentMixerPreset.motorMixer[rule];
 
                 FC.MOTOR_RULES.put(
                     new MotorMixRule(
@@ -835,6 +645,7 @@ mixerTab.initialize = function (callback, scrollPosition) {
                         r.getYaw()
                     )
                 );
+
             }
 
             renderMotorMixRules();
@@ -843,59 +654,17 @@ mixerTab.initialize = function (callback, scrollPosition) {
             motorWizardModal.close();
         });
 
-        // Reset wizard when modal opens
-        motorWizardModal.options.onOpen = function() {
-            const positions = WIZARD_MOTOR_POSITIONS[currentMixerPreset.image];
-            if (!positions) {
-                motorWizardModal.close();
-                return;
-            }
-            resetWizard(positions.length);
-
-            // Update preview image
-            const $wizardImg = $('#wizard-preview-img');
-            const $mainImg = $('#motor-mixer-preview-img');
-            if ($mainImg.attr('src')) {
-                $wizardImg.attr('src', $mainImg.attr('src'));
-            }
-
-            buildPositionButtons(positions);
-        };
-
-        // Clean up when modal closes
-        motorWizardModal.options.onClose = function() {
-            stopMotors();
-            wizardState.isActive = false;
-
-            // Restore DShot beeper if it was enabled before the wizard
-            if (wizardState.savedDshotBeeper) {
-                mspHelper.setSetting('dshot_beeper_enabled', wizardState.savedDshotBeeper);
-                wizardState.savedDshotBeeper = null;
-            }
-        };
-
         const updateMotorDirection = function () {
             let motorDirectionCheckbox = $('input[name=motor_direction_inverted]:checked');
             const isReversed = motorDirectionCheckbox.val() == 1 && (FC.MIXER_CONFIG.platformType == PLATFORM.MULTIROTOR || FC.MIXER_CONFIG.platformType == PLATFORM.TRICOPTER);
 
-            import(`./../resources/motor_order/${currentMixerPreset.image}${isReversed ? "_reverse" : ""}.svg`).then(({default: path}) => {
-                const $img = $('.mixerPreview img');
-                $img.attr('src', path);
-                // Wait for image to load before positioning motor numbers
-                $img.off('load.motorNumbers').on('load.motorNumbers', function() {
-                    labelMotorNumbers();
-                });
-                // If image is already cached, load event won't fire, so check complete
-                if ($img[0].complete) {
-                    labelMotorNumbers();
-                }
-            });
-
+            const path = './resources/motor_order/'
+                + currentMixerPreset.image + (isReversed ? "_reverse" : "") + '.svg';
+            $('.mixerPreview img').attr('src', path);
             renderServoOutputImage();
         };
 
         $("#motor_direction_inverted").on('change', updateMotorDirection);
-        $("#motor_direction_normal").on('change', updateMotorDirection);
 
         $platformSelect.find("*").remove();
 
@@ -925,8 +694,11 @@ mixerTab.initialize = function (callback, scrollPosition) {
 
             FC.MIXER_CONFIG.appliedMixerPreset = presetId;
 
-            const wizardSupported = Object.prototype.hasOwnProperty.call(WIZARD_MOTOR_POSITIONS, currentMixerPreset.image);
-            $("#mixer-wizard-gui_box").toggleClass("is-hidden", !wizardSupported);
+            if (currentMixerPreset.id == 3) {
+                $("#mixer-wizard-gui_box").removeClass("is-hidden");
+            } else {
+                $("#mixer-wizard-gui_box").addClass("is-hidden");
+            }
 
             if (FC.MIXER_CONFIG.platformType == PLATFORM.AIRPLANE && currentMixerPreset.id != loadedMixerPresetID) {
                 $("#needToUpdateMixerMessage").removeClass("is-hidden");
@@ -935,19 +707,20 @@ mixerTab.initialize = function (callback, scrollPosition) {
             }
 
             if (FC.MIXER_CONFIG.platformType == PLATFORM.MULTIROTOR || FC.MIXER_CONFIG.platformType == PLATFORM.TRICOPTER) {
-                $('#motor_direction_container').removeClass("is-hidden");
+                $('#motor_direction_inverted').parent().removeClass("is-hidden");
                 $('#platform-type').parent('.select').removeClass('no-bottom-border');
             } else {
-                $('#motor_direction_container').addClass("is-hidden");
+                $('#motor_direction_inverted').parent().addClass("is-hidden");
                 $('#platform-type').parent('.select').addClass('no-bottom-border');
             }
 
-            if (FC.MIXER_CONFIG.platformType !== PLATFORM.MULTIROTOR && FC.MIXER_CONFIG.platformType !== PLATFORM.TRICOPTER) {
+            if (!GUI.updateEzTuneTabVisibility(false)) {
                 FC.EZ_TUNE.enabled = 0;
                 mspHelper.saveEzTune();
             }
 
             updateRefreshButtonStatus();
+            labelMotorNumbers();
             updateMotorDirection();
         });
 
@@ -958,9 +731,6 @@ mixerTab.initialize = function (callback, scrollPosition) {
         } else {
             $mixerPreset.trigger('change');
         }
-
-        // Re-run after settings load, since configureInputs() is async.
-        settingsPromise.then(() => updateMotorDirection());
 
         modal = new jBox('Modal', {
             width: 480,
@@ -1060,12 +830,6 @@ mixerTab.initialize = function (callback, scrollPosition) {
 
         interval.add('logic_conditions_pull', getLogicConditionsStatus, 350);
 
-        // configureInputs() populates radio buttons asynchronously via MSP.
-        // The synchronous $mixerPreset.trigger('change') above fires before
-        // those requests complete, so re-run once the real values are in.
-        settingsPromise.then(() => updateMotorDirection())
-            .catch((error) => console.error('Settings load failed, motor direction not updated:', error));
-
         GUI.content_ready(callback);
     }
 
@@ -1090,11 +854,9 @@ mixerTab.initialize = function (callback, scrollPosition) {
 
 };
 
-mixerTab.cleanup = function (callback) {
+TABS.mixer.cleanup = function (callback) {
     //delete modal;
     //delete motorWizardModal;
     $('.jBox-wrapper').remove();
     if (callback) callback();
 };
-
-export default mixerTab;

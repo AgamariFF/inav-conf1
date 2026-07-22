@@ -63,4 +63,4 @@ var timeout = (function () {
     return publicScope;
 })();
 
-export default timeout;
+module.exports = timeout;

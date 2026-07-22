@@ -255,12 +255,6 @@ const LOGIC_OPERATORS = {
         hasOperand: [true, false],
         output: "boolean"
     },
-    56: {
-        name: "Override Minimum Ground Speed",
-        operandType: "Set Flight Parameter",
-        hasOperand: [true, false],
-        output: "boolean"
-    },
     42: {
         name: "Set Control Profile",
         operandType: "Set Flight Parameter",
@@ -338,13 +332,7 @@ const LOGIC_OPERATORS = {
         operandType: "Set Flight Parameter",
         hasOperand: [false, false],
         output: "boolean"
-    },
-    55: {
-        name: "Gimbal sensitivity",
-        operandType: "Set Flight Parameter",
-        hasOperand: [true, false],
-        output: "boolean"
-    },
+    }
 };
 
-export { LOGIC_OPERATORS };
+module.exports = { LOGIC_OPERATORS };

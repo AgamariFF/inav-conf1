@@ -58,4 +58,4 @@ var Safehome = function (number, enabled, lat, lon) {
     return self;
 };
 
-export default Safehome;
+module.exports = Safehome;

@@ -1,7 +1,7 @@
 'use strict';
 
-import BitHelper from './bitHelper';
-import { GeozoneShapes } from './geozone';
+const BitHelper = require('./bitHelper');
+const { GeozoneShapes } = require('./geozone');
 
 let GeozoneCollection = function() {
     let self = {},
@@ -149,4 +149,4 @@ let GeozoneCollection = function() {
     return self;
 };
 
-export default GeozoneCollection;
+module.exports = GeozoneCollection;

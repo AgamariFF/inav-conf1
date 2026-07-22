@@ -1,6 +1,11 @@
 'use strict'
+const path = require('path');
+const { app } = require('@electron/remote');
+const { SerialPort } = require('serialport');
+const { spawn } = require('node:child_process');
+const { chmod, rm } = require('node:fs');
 
-import GUI from './gui';
+const { GUI } = require('./gui');
 
 const serialRXProtocolls = [
 {
@@ -51,7 +56,28 @@ var SitlSerialPortUtils = {
     },
 
     getDevices: function(callback) {
-        window.electronAPI.listSerialDevices().then(devices => callback(devices));
+        SerialPort.list().then((ports, error) => {
+            var devices = [];
+            if (error) {
+                GUI.log("Unable to list serial ports.");
+            } else {  
+                 ports.forEach((device) => {
+                if (GUI.operating_system == 'Windows') {
+                    var m = device.path.match(/COM\d?\d/g)
+                        if (m)
+                          devices.push(m[0]);
+                } else {
+			/* Limit to: USB serial, RFCOMM (BT), 6 legacy devices */
+			if (device.pnpId ||
+			    device.path.match(/rfcomm\d*/) ||
+			    device.path.match(/ttyS[0-5]$/)) {
+			    devices.push(device.path);
+                    }
+                    }
+            });
+            }
+            callback(devices);
+        });
     },
 
     pollSerialPorts: function(callback) {
@@ -95,11 +121,12 @@ var SITLProcess = {
 
     spawn : null,
     isRunning: false,
+    process: null,
 
     deleteEepromFile(filename) {
-        window.electronAPI.rm(`${window.electronAPI.appGetPath('userData')}/${filename}`).then(error => {
+        rm(`${app.getPath('userData')}/${filename}`, error => {
             if (error) {
-                GUI.log(`Unable to reset Demo mode: ${error}`);
+                GUI.log(`Unable to reset Demo mode: ${error.message}`);
             }
         });
     },
@@ -110,26 +137,26 @@ var SITLProcess = {
             this.stop();
 
         var sitlExePath, eepromPath;
-        var path = window.electronAPI.appGetPath('userData');
         if (GUI.operating_system == 'Windows') {
-            sitlExePath = '/windows/inav_SITL.exe';
-            eepromPath = `${path}\\${eepromFileName}`
+            sitlExePath = path.join(__dirname, './../resources/sitl/windows/inav_SITL.exe');
+            eepromPath = `${app.getPath('userData')}\\${eepromFileName}`
         } else if (GUI.operating_system == 'Linux') {
-            sitlExePath = '/linux/inav_SITL';
-            eepromPath = `${path}/${eepromFileName}`
-            window.electronAPI.chmod(sitlExePath, 0o755).then(err => {
+            sitlExePath = path.join(__dirname, './../resources/sitl/linux/inav_SITL');
+            eepromPath = `${app.getPath('userData')}/${eepromFileName}`
+            chmod(sitlExePath, 0o755, err => {
                 if (err)
                     console.log(err);
             });
         } else if (GUI.operating_system == 'MacOS') {
-            sitlExePath = '/macos/inav_SITL';
-            eepromPath = `${path}/${eepromFileName}`
-            window.electronAPI.chmod(sitlExePath, 0o755).then(err => {
+            sitlExePath = path.join(__dirname, './../resources/sitl/macos/inav_SITL');
+            eepromPath = `${app.getPath('userData')}/${eepromFileName}`
+            chmod(sitlExePath, 0o755, err => {
                 if (err)
                     console.log(err);
             });
  
         } else {
+            GUI.alert(GUI.operating_system);
             return;
         }
 
@@ -175,34 +202,44 @@ var SITLProcess = {
             }
         }
 
-        if (callback) {
+	if (callback) {
             callback( sitlExePath + " " + args.join(" ") + "\n");
-        }
-        this.spawn(sitlExePath, args);
+	}
+        this.spawn(sitlExePath, args, callback);
     },
 
-    spawn: function(path, args) {
+    spawn: function(path, args, callback) {
 
         var opts = undefined;
         if (GUI.operating_system == 'Linux')
             opts = { useShell: true };
 
-        window.electronAPI.startChildProcess(path, args, opts);
-
-        if (this.processHandle == -1) {
-            this.isRunning = false;
-            return;
-        }
-
+        this.process = spawn(path, args, opts);
         this.isRunning = true;
+
+        this.process.stdout.on('data', (data) => {
+            if (callback)
+                callback(data);
+        });
+
+        this.process.stderr.on('data', (data) => {
+            if (callback)
+                callback(data);
+        });
+
+        this.process.on('error', (error) => {
+            if (callback)
+                callback(error);
+            this.isRunning = false;
+        });
     },
 
     stop: function() {
         if (this.isRunning) {
             this.isRunning = false;
-            window.electronAPI.killChildProcess();
+            this.process.kill();
         }
     }
 };
 
-export { SITLProcess, SitlSerialPortUtils };
+module.exports = { SITLProcess, SitlSerialPortUtils };

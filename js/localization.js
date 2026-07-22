@@ -1,52 +1,49 @@
 'use strict';
 
 // Thanks to Betaflight :)
-import i18next from 'i18next';
 
-import store from './store'
+window.$ = window.jQuery =  require('jquery');
+const { app } = require('@electron/remote');
+const path = require('path');
+const i18next = require('i18next');
+const i18nextXHRBackend = require('i18next-xhr-backend');
+const Store = require('electron-store');
+const store = new Store();
 
 
-const availableLanguages = ['en', 'de', 'ja', 'ru', 'bg', 'uk', 'zh_CN'];
+const availableLanguages = ['en', 'ja', 'uk','zh_CN'];
 
 const i18n = {};
-
-i18n.loadMessages = async function(languages) {
-    var resources = {};
-    for (const lng of languages) {
-        var msg = (await import(`./../locale/${lng}/messages.json?raw`)).default;
-        resources[lng] = { messages: this.parseInputFile(msg) };  
-    } 
-    return resources;
-}
-
+  
 i18n.init = function (callback) {
-    const locale = window.electronAPI.appGetLocale();
-    const userLanguage = store.get('userLanguage', locale);
-    this.loadMessages(availableLanguages).then(resources => {
-        i18next.init({
-            lng: userLanguage,
-            getAsync: false,
-            debug: true,
-            ns: ['messages'],
-            defaultNS:['messages'],
-            fallbackLng: 'en',
-            resources: resources
-        }, function(err) {
-            if (err) {
-                console.error(`Error loading i18n: ${err}`);
-            } else {
-                console.log('i18n system loaded');
-                const detectedLanguage = i18n.getMessage(`language_${i18n.getValidLocale("DEFAULT")}`);
-                i18next.addResourceBundle('en', 'messages', { "detectedLanguage": detectedLanguage }, true, true);
-                i18next.on('languageChanged', function () {
-                    i18n.localize(true);
-                });
-            }
+        
+    i18next.use(i18nextXHRBackend);
+    i18next.init({
+        lng: store.get('userLanguage', app.getLocale()),
+        getAsync: false,
+        debug: true,
+        ns: ['messages'],
+        defaultNS:['messages'],
+        fallbackLng: 'en',
+        backend: {
+            loadPath: path.join(__dirname, "./../locale/{{lng}}/{{ns}}.json"),
+            parse: i18n.parseInputFile,
+        },
+    }, function(err) {
+        if (err !== undefined) {
+            console.error(`Error loading i18n: ${err}`);
+        } else {
+            console.log('i18n system loaded');
+            const detectedLanguage = i18n.getMessage(`language_${i18n.getValidLocale("DEFAULT")}`);
+            i18next.addResourceBundle('en', 'messages', {"detectedLanguage": detectedLanguage }, true, true);
+            i18next.on('languageChanged', function () {
+                i18n.localize(true);
+            });
+        }
 
-            if (callback) {
-                callback();
-            }
-        });
+        if (callback) {
+            callback();
+        }
     });
 }
 
@@ -71,7 +68,7 @@ i18n.parseInputFile = function (data) {
 i18n.getValidLocale = function(userLocale) {
     let validUserLocale = userLocale;
     if (validUserLocale === 'DEFAULT') {
-        validUserLocale = window.electronAPI.appGetLocale();
+        validUserLocale = app.getLocale();
         console.log(`Detected locale ${validUserLocale}`);
     }
 
@@ -110,7 +107,7 @@ i18n.getMessage = function(messageID, parameters) {
 };
 
 i18n.getCurrentLanguage = function() {
-    return i18next.resolvedLanguage;
+    return i18next.language;
 };
 
 i18n.getLanguages = function() {
@@ -120,6 +117,7 @@ i18n.getLanguages = function() {
 i18n.changeLanguage = function(languageSelected) {
     store.set('userLanguage', languageSelected);
     i18next.changeLanguage(i18n.getValidLocale(languageSelected));
+    //i18n.selectedLanguage = languageSelected;
 };
 
 i18n.localize = function (reTranslate = false) {
@@ -254,4 +252,4 @@ i18n.localize = function (reTranslate = false) {
     return localized;
 }
  
-export default i18n;
+module.exports = i18n;

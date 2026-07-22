@@ -84,4 +84,4 @@ var LogicConditionsCollection = function () {
     return self;
 };
 
-export default LogicConditionsCollection;
+module.exports = LogicConditionsCollection;

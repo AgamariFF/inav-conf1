@@ -1,12 +1,12 @@
 'use strict';
 
-import mapSeries from 'promise-map-series';
+const mapSeries = require('promise-map-series')
 
-import mspHelper from './../js/msp/MSPHelper';
-import GUI from './gui';
-import FC from './fc';
-import { globalSettings, UnitType } from './globalSettings';
-import i18n from './localization';
+const mspHelper = require('./../js/msp/MSPHelper');
+const { GUI } = require('./gui');
+const FC = require('./fc');
+const { globalSettings, UnitType } = require('./globalSettings');
+const i18n = require('./localization');
 
 function padZeros(val, length) {
     let str = val.toString();
@@ -21,49 +21,6 @@ function padZeros(val, length) {
     }
 
     return str;
-}
-
-/**
- * Round a converted value to fewer decimal places when doing so
- * changes the value by less than 1%. For example, 328.08 ft (from 100m)
- * becomes "328" and 9842.52 ft becomes "9843". Also rounds to the
- * nearest 10/100/etc when within 1 of a boundary (e.g. 999 → "1000").
- * Returns a string like toFixed().
- */
-function smartRound(value, decimalPlaces) {
-    if (decimalPlaces < 2 || value === 0) {
-        return value.toFixed(decimalPlaces);
-    }
-    // Try removing decimal places (most aggressive first)
-    let best = null;
-    for (let dp = 0; dp <= decimalPlaces - 2; dp++) {
-        let rounded = parseFloat(value.toFixed(dp));
-        if (Math.abs(rounded - value) / Math.abs(value) < 0.01) {
-            best = rounded.toFixed(dp);
-            break;
-        }
-    }
-    // Try rounding to nearest 10, 100, etc. but only when the integer
-    // value is within 1 of a boundary (e.g. 999->1000, 1001->1000).
-    // Use absolute values for boundary detection to handle negatives.
-    if (best !== null) {
-        let intVal = Math.round(Math.abs(value));
-        for (let mag = 1; mag <= 3; mag++) {
-            let factor = Math.pow(10, mag);
-            let remainder = intVal % factor;
-            if (remainder <= 1 || remainder >= factor - 1) {
-                let rounded = Math.sign(value) * Math.round(Math.abs(value) / factor) * factor;
-                if (Math.abs(rounded - value) / Math.abs(value) < 0.01) {
-                    best = rounded.toFixed(0);
-                } else {
-                    break;
-                }
-            } else {
-                break;
-            }
-        }
-    }
-    return best !== null ? best : value.toFixed(decimalPlaces);
 }
 
 var Settings = (function () {
@@ -162,9 +119,12 @@ var Settings = (function () {
                     input.val(s.value);
                     input.attr('maxlength', s.setting.max);
                 } else if (input.data('presentation') == 'range') {
+                    
                     GUI.sliderize(input, s.value, s.setting.min, s.setting.max);
+
                 } else if (s.setting.type == 'float') {
                     input.attr('type', 'number');
+
                     let dataStep = input.data("step");
 
                     if (typeof dataStep === 'undefined') {
@@ -192,30 +152,21 @@ var Settings = (function () {
                     }
                 }
 
-                // If data is defined, We want to convert this value into
-                // something matching the units
+                // If data is defined, We want to convert this value into 
+                // something matching the units        
                 self.convertToUnitSetting(input, inputUnit);
 
                 input.data('setting-info', s.setting);
                 if (input.data('live')) {
                     input.on('change', function () {
                         const settingPair = self.processInput(input);
-                        if (!settingPair) { return; }
                         return mspHelper.setSetting(settingPair.setting, settingPair.value);
                     });
                 }
-            }).catch(function(err) {
-                // Setting read failed. Log it so the problem is visible, then
-                // remove the input so incorrect data is not shown or saved.
-                console.error('Failed to read setting "' + settingName + '":', err);
-                var parent = input.parents('.setting-container:first');
-                if (parent.length == 0) {
-                    parent = input.parent();
-                }
-                parent.remove();
             });
         });
     };
+
 
     /**
      * 
@@ -274,10 +225,9 @@ var Settings = (function () {
             // Angles
             'centideg'      : 'centi&deg;',
             'centideg-deg'  : 'centi&deg;', // Centidegrees, but always converted to degrees by default
+            'deg'           : '&deg;',
             'decideg'       : 'deci&deg;',
             'decideg-lrg'   : 'deci&deg;', // Decidegrees, but always converted to degrees by default
-            'deg'           : '&deg;',
-            'decadeg'       : 'deca&deg;',
             // Rotational speed
             'degps'     : '&deg; per second',
             'decadegps' : 'deca&deg; per second',
@@ -323,10 +273,9 @@ var Settings = (function () {
             // Angles
             'centideg'      : 'CentiDegrees',
             'centideg-deg'  : 'CentiDegrees',
+            'deg'           : 'Degrees',
             'decideg'       : 'DeciDegrees',
             'decideg-lrg'   : 'DeciDegrees',
-            'deg'           : 'Degrees',
-            'decadeg'       : 'DecaDegrees',
             // Rotational speed
             'degps'     : 'Degrees per second',
             'decadegps' : 'DecaDegrees per second',
@@ -364,64 +313,61 @@ var Settings = (function () {
         //unitConversionTable[toUnit][fromUnit] -> factor
         const unitRatioTable = {
             'cm' : {
-                'm' : 100.0, 
+                'm' : 100, 
                 'ft' : 30.48
             },
             'm' : {
-                'm' : 1.0,
+                'm' : 1,
                 'ft' : 0.3048
             },
             'm-lrg' : {
-                'km' : 1000.0,
+                'km' : 1000,
                 'mi' : 1609.344,
-                'nm' : 1852.0
+                'nm' : 1852
             },
             'cms' : { // Horizontal speed
                 'kmh' : 27.77777777777778, 
                 'kt': 51.44444444444457, 
                 'mph' : 44.704,
-                'ms' : 100.0
+                'ms' : 100
             },
             'v-cms' : { // Vertical speed
-                'ms' : 100.0,
+                'ms' : 100,
                 'hftmin' : 50.8,
                 'fts' : 30.48
             },
             'msec-nc' : {
-                'msec-nc' : 1.0
+                'msec-nc' : 1
             },
             'msec' : {
-                'sec' : 1000.0
+                'sec' : 1000
             },
             'dsec' : {
-                'sec' : 10.0
+                'sec' : 10
             },
             'mins' : {
-                'hours' : 60.0
+                'hours' : 60
             },
             'tzmins' : {
                 'tzhours' : 'TZHOURS'
             },
             'centideg' : {
-                'deg' : 100
+                'deg' : 0.1
             },
             'centideg-deg' : {
-                'deg' : 100
+                'deg' : 0.1
             },
             'decideg' : {
-                'deg' : 10.0
+                'deg' : 10
             },
             'decideg-lrg' : {
-                'deg' : 10.0
-            },
-            'decadeg' : {
-                'deg' : 0.1
+                'deg' : 10
             },
             'decadegps' : {
                 'degps' : 0.1
             },
             'decidegc' : {
-                'degc' : 10.0,
+                'degc' : 10,
                 'degf' : 'FAHREN'
             },
         };
@@ -443,7 +389,6 @@ var Settings = (function () {
                 'centideg-deg' : 'deg',
                 'decideg' : 'deg',
                 'decideg-lrg' : 'deg',
-                'decadeg' : 'deg',
                 'decidegc' : 'degf',
             },
             1: { //metric
@@ -461,7 +406,6 @@ var Settings = (function () {
                 'centideg-deg' : 'deg',
                 'decideg' : 'deg',
                 'decideg-lrg' : 'deg',
-                'decadeg' : 'deg',
                 'decidegc' : 'degc',
             },
             2: { //metric with MPH
@@ -475,7 +419,6 @@ var Settings = (function () {
                 'centideg-deg' : 'deg',
                 'decideg' : 'deg',
                 'decideg-lrg' : 'deg',
-                'decadeg' : 'deg',
                 'msec' : 'sec',
                 'dsec' : 'sec',
                 'mins' : 'hours',
@@ -493,7 +436,6 @@ var Settings = (function () {
                 'centideg-deg' : 'deg',
                 'decideg' : 'deg',
                 'decideg-lrg' : 'deg',
-                'decadeg' : 'deg',
                 'msec' : 'sec',
                 'dsec' : 'sec',
                 'mins' : 'hours',
@@ -511,7 +453,6 @@ var Settings = (function () {
                 'centideg-deg' : 'deg',
                 'decideg' : 'deg',
                 'decideg-lrg' : 'deg',
-                'decadeg' : 'deg',
                 'msec' : 'sec',
                 'dsec' : 'sec',
                 'mins' : 'hours',
@@ -523,7 +464,6 @@ var Settings = (function () {
                 'decideg-lrg' : 'deg',
                 'centideg' : 'deg',
                 'centideg-deg' : 'deg',
-                'decadeg' : 'deg',
                 'tzmins' : 'tzhours',
             }
         };
@@ -551,8 +491,8 @@ var Settings = (function () {
         let decimalPlaces = 0;
         // Update the step, min, and max; as we have the multiplier here.
         if (element.attr('type') == 'number') {
-            let step = parseFloat(element.data("step")) || parseFloat(element.attr('step')) || 1;
-
+            let step = parseFloat(element.attr('step')) || 1;
+            
             if (multiplier !== 1) { 
                 decimalPlaces = Math.min(Math.ceil(multiplier / 100), 3);
                 // Add extra decimal place for non-integer conversions.
@@ -560,8 +500,6 @@ var Settings = (function () {
                     decimalPlaces++;
                 }
                 step = 1 / Math.pow(10, decimalPlaces);
-            } else { 
-                decimalPlaces = this.countDecimals(step);
             }
             element.attr('step', step.toFixed(decimalPlaces));
 
@@ -587,7 +525,7 @@ var Settings = (function () {
             let mins = oldValue - (hours*60);
             newValue = ((hours < 0) ? padZeros(hours, 3) : padZeros(hours, 2)) + ':' + padZeros(mins, 2);
         } else {
-            newValue = smartRound(Number(oldValue / multiplier), decimalPlaces);
+            newValue = Number((oldValue / multiplier)).toFixed(decimalPlaces);
         }
 
         element.val(newValue);
@@ -665,8 +603,8 @@ var Settings = (function () {
         // verify if number 0.000005 is represented as "5e-6"
         if (text.indexOf('e-') > -1) {
           let [base, trail] = text.split('e-');
-          let decimals = parseInt(trail, 10);
-          return decimals;
+          let deg = parseInt(trail, 10);
+          return deg;
         }
         // count decimals for number in representation like "0.123456"
         if (Math.floor(value) !== value) {
@@ -676,15 +614,10 @@ var Settings = (function () {
     };
 
     self.pickAndSaveSingleInput = function(inputs, finalCallback) {
-        // Skip inputs whose settings failed to load (null settingPair), using a
-        // loop rather than recursion to avoid stack growth for large null runs.
-        while (inputs.length > 0 && !self.processInput(inputs[0])) {
-            inputs.shift();
-        }
         if (inputs.length > 0) {
             var input = inputs.shift();
             var settingPair = self.processInput(input);
-            return mspHelper.setSetting(settingPair.setting, settingPair.value, function() {
+            return mspHelper.setSetting(settingPair.setting, settingPair.value, function() {       
                 return self.pickAndSaveSingleInput(inputs, finalCallback);
             });
         } else {
@@ -704,12 +637,8 @@ var Settings = (function () {
 
     self.processHtml = function(callback) {
         return function() {
-            // Start loading settings in background - don't block rendering
-            const settingsPromise = self.configureInputs();
+            self.configureInputs().then(callback);
             self.linkHelpIcons();
-            // Call callback immediately so page can start rendering
-            // Pass settingsPromise so tabs can optionally await it if needed
-            callback(settingsPromise);
         };
     };
 
@@ -745,5 +674,4 @@ var Settings = (function () {
     return self;
 })();
 
-export default  Settings;
-export { smartRound };
+module.exports = Settings;

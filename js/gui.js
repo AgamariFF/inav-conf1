@@ -1,12 +1,16 @@
 'use strict';
+const { dialog } = require("@electron/remote");
 
-import MSP from './msp';
-import FC from './fc';
-import interval from './intervals';
-import { scaleRangeInt } from './helpers';
-import i18n from './localization';
-import mspDeduplicationQueue from "./msp/mspDeduplicationQueue";
-import mspQueue from './serial_queue';
+const CONFIGURATOR = require('./data_storage');
+const Switchery = require('./libraries/switchery/switchery')
+const MSP = require('./msp');
+const FC = require('./fc');
+const interval = require('./intervals');
+const { scaleRangeInt } = require('./helpers');
+const i18n = require('./localization');
+const mspDeduplicationQueue = require("./msp/mspDeduplicationQueue");
+
+var TABS = {}; // filled by individual tab js file
 
 var GUI_control = function () {
     this.connecting_to = false;
@@ -46,7 +50,6 @@ var GUI_control = function () {
         'mission_control',
         'mixer',
         'programming',
-        'javascript_programming',
         'ez_tune',
         'search'
     ];
@@ -94,41 +97,50 @@ GUI_control.prototype.log = function (message) {
 // default switch doesn't require callback to be set
 GUI_control.prototype.tab_switch_cleanup = function (callback) {
     MSP.callbacks_cleanup(); // we don't care about any old data that might or might not arrive
-    // Drop the previous tab's still-queued requests and release the port lock,
-    // otherwise they keep retrying and re-reserve their (shared) MSP code in the
-    // dedup queue, which then rejects the new tab's same-code requests and hangs
-    // its load.
-    mspQueue.flush();
-    mspQueue.freeHardLock();
-    mspQueue.freeSoftLock();
     mspDeduplicationQueue.flush();
 
     interval.killAll(['global_data_refresh', 'msp-load-update', 'ltm-connection-check']);
 
     if (this.active_tab) {
-        this.active_tab.cleanup(callback);
+        TABS[this.active_tab].cleanup(callback);
     } else {
         callback();
     }
 };
 
 GUI_control.prototype.switchery = function() {
-   
     $('.togglesmall').each(function(index, elem) {
-        $(elem).wrapAll('<label class="ios7-switch" style="font-size: 12px"/>');
-        $(elem).after('<span></span>')
+        var switchery = new Switchery(elem, {
+            size: 'small',
+            color: '#37a8db',
+            secondaryColor: '#c4c4c4'
+        });
+        $(elem).on("change", function (evt) {
+            switchery.setPosition();
+        });
         $(elem).removeClass('togglesmall');
     });
 
     $('.toggle').each(function(index, elem) {
-        $(elem).wrapAll('<label class="ios7-switch" style="font-size: 17px"/>');
-        $(elem).after('<span></span>')
+        var switchery = new Switchery(elem, {
+            color: '#37a8db',
+            secondaryColor: '#c4c4c4'
+        });
+        $(elem).on("change", function (evt) {
+            switchery.setPosition();
+        });
         $(elem).removeClass('toggle');
     });
 
     $('.togglemedium').each(function(index, elem) {
-        $(elem).wrapAll('<label class="ios7-switch" style="font-size: 15px"/>');
-        $(elem).after('<span></span>')
+        var switchery = new Switchery(elem, {
+            className: 'switcherymid',
+            color: '#37a8db',
+            secondaryColor: '#c4c4c4'
+        });
+        $(elem).on("change", function (evt) {
+            switchery.setPosition();
+        });
         $(elem).removeClass('togglemedium');
     });
 };
@@ -136,8 +148,40 @@ GUI_control.prototype.switchery = function() {
 
 GUI_control.prototype.content_ready = function (callback) {
     const content = $('#content').removeClass('loading');
-    
-    this.switchery();
+    $('.togglesmall').each(function(index, elem) {
+        var switchery = new Switchery(elem, {
+          size: 'small',
+          color: '#37a8db',
+          secondaryColor: '#c4c4c4'
+        });
+        $(elem).on("change", function (evt) {
+            switchery.setPosition();
+        });
+        $(elem).removeClass('togglesmall');
+    });
+
+    $('.toggle').each(function(index, elem) {
+        var switchery = new Switchery(elem, {
+            color: '#37a8db',
+            secondaryColor: '#c4c4c4'
+        });
+        $(elem).on("change", function (evt) {
+            switchery.setPosition();
+        });
+        $(elem).removeClass('toggle');
+    });
+
+    $('.togglemedium').each(function(index, elem) {
+        var switchery = new Switchery(elem, {
+            className: 'switcherymid',
+            color: '#37a8db',
+            secondaryColor: '#c4c4c4'
+         });
+         $(elem).on("change", function (evt) {
+             switchery.setPosition();
+         });
+         $(elem).removeClass('togglemedium');
+    });
 
     // Insert a documentation button next to the tab title
     const tabTitle = $('div#content .tab_title').first();
@@ -279,12 +323,14 @@ GUI_control.prototype.simpleBind = function () {
     });
 };
 
-GUI_control.prototype.load = function(html, callback) {
+GUI_control.prototype.load = function(rel, callback) {
     const content = $('#content').addClass('loading');
-    $(html).appendTo(content);
-    if (callback) {
-        callback();
-    }
+    $.get(rel, function(data) {
+        $(data).appendTo(content);
+        if (callback) {
+            callback();
+        }
+    });
 }
 
 GUI_control.prototype.renderOperandValue = function ($container, operandMetadata, operand, value, onChange) {
@@ -457,17 +503,17 @@ GUI_control.prototype.sliderize = function ($input, value, min, max) {
 GUI_control.prototype.update_dataflash_global = function () {
     function formatFilesize(bytes) {
         if (bytes < 1024) {
-            return Math.round(bytes / 1024) + " KB";
+            return bytes + "B";
         }
         var kilobytes = bytes / 1024;
 
         if (kilobytes < 1024) {
-            return Math.round(kilobytes) + " KB";
+            return Math.round(kilobytes) + "kB";
         }
 
         var megabytes = kilobytes / 1024;
 
-        return megabytes.toFixed(1) + " MB";
+        return megabytes.toFixed(1) + "MB";
     }
 
     var supportsDataflash = FC.DATAFLASH.totalSize > 0;
@@ -485,10 +531,7 @@ GUI_control.prototype.update_dataflash_global = function () {
         width: (100-(FC.DATAFLASH.totalSize - FC.DATAFLASH.usedSize) / FC.DATAFLASH.totalSize * 100) + "%",
         display: 'block'
         });
-        $(".dataflash-free_global_label").css({
-        display: 'block'
-        });
-        $(".dataflash-free_global_label").html(i18n.getMessage('sensorDataFlashFreeSpace') + formatFilesize(FC.DATAFLASH.totalSize - FC.DATAFLASH.usedSize) + " free");
+        $(".dataflash-free_global div").html(i18n.getMessage('sensorDataFlashFreeSpace') + formatFilesize(FC.DATAFLASH.totalSize - FC.DATAFLASH.usedSize));
     } else {
         $(".noflash_global").css({
         display: 'block'
@@ -497,15 +540,21 @@ GUI_control.prototype.update_dataflash_global = function () {
         $(".dataflash-contents_global").css({
         display: 'none'
         });
-
-        $(".dataflash-free_global_label").css({
-        display: 'none'
-        });
     }
 };
 
+/**
+* Don't use alert() or confirm() in Electron, it has a nasty bug: https://github.com/electron/electron/issues/31917
+*/ 
+GUI_control.prototype.alert = function(message) {
+    dialog.showMessageBoxSync({ message: message, icon: "./images/inav_icon_128.png" });
+}
+
+GUI_control.prototype.confirm = function(message) {
+    return dialog.showMessageBoxSync({ message: message, icon: "./images/inav_icon_128.png", buttons: ["Yes", "No"]}) == 0;
+}
 
 // initialize object into GUI variable
 var GUI = new GUI_control();
 
-export default GUI;
+module.exports = { GUI, TABS };

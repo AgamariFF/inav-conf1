@@ -51,4 +51,4 @@ var ServoMixRule = function (target, input, rate, speed, condition) {
     return self;
 };
 
-export default ServoMixRule;
+module.exports = ServoMixRule;

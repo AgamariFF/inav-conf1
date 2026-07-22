@@ -1,23 +1,25 @@
 'use strict';
 
-import MSPChainerClass from './../js/msp/MSPchainer';
-import mspHelper from './../js/msp/MSPHelper';
-import MSPCodes from './../js/msp/MSPCodes';
-import MSP from './../js/msp';
-import GUI from './../js/gui';
-import FC from './../js/fc';
-import interval from './../js/intervals';
-import VTX from './../js/vtx';
-import i18n from './../js/localization';
-import Settings from './../js/settings';
-import features from './../js/feature_framework';
+const path = require('path');
 
-const configurationTab = {};
+const MSPChainerClass = require('./../js/msp/MSPchainer');
+const mspHelper = require('./../js/msp/MSPHelper');
+const MSPCodes = require('./../js/msp/MSPCodes');
+const MSP = require('./../js/msp');
+const { GUI, TABS } = require('./../js/gui');
+const FC = require('./../js/fc');
+const interval = require('./../js/intervals');
+const VTX = require('./../js/vtx');
+const i18n = require('./../js/localization');
+const Settings = require('./../js/settings');
+const features = require('./../js/feature_framework');
 
-configurationTab.initialize = function (callback, scrollPosition) {
+TABS.configuration = {};
 
-    if (GUI.active_tab !== this) {
-        GUI.active_tab = this;
+TABS.configuration.initialize = function (callback, scrollPosition) {
+
+    if (GUI.active_tab != 'configuration') {
+        GUI.active_tab = 'configuration';
 
     }
 
@@ -72,10 +74,10 @@ configurationTab.initialize = function (callback, scrollPosition) {
     }
 
     function load_html() {
-        import('./configuration.html?raw').then(({default: html}) => GUI.load(html, Settings.processHtml(process_html)));
+        GUI.load(path.join(__dirname, "configuration.html"), Settings.processHtml(process_html));
     }
 
-    function process_html(settingsPromise) {
+    function process_html() {
 
         let i;
 
@@ -163,7 +165,9 @@ configurationTab.initialize = function (callback, scrollPosition) {
 
             var vtx_power = $('#vtx_power');
             vtx_power.empty();
-            for (var ii = FC.VTX_CONFIG.power_min; ii <= FC.VTX_CONFIG.power_count; ii++) {
+            var minPower = VTX.getMinPower(FC.VTX_CONFIG.device_type);
+            var maxPower = VTX.getMaxPower(FC.VTX_CONFIG.device_type);
+            for (var ii = minPower; ii <= maxPower; ii++) {
                 var option = $('<option value="' + ii + '">' + ii + '</option>');
                 if (ii == FC.VTX_CONFIG.power) {
                     option.prop('selected', true);
@@ -261,12 +265,7 @@ configurationTab.initialize = function (callback, scrollPosition) {
 
         });
 
-        // Wait for settings to load before triggering change event
-        settingsPromise.then(function() {
-            $i2cSpeed.trigger('change');
-        }).catch(function(error) {
-            console.error('Settings load failed, I2C speed change not triggered:', error);
-        });
+        $i2cSpeed.trigger('change');
 
         $('a.save').on('click', function () {
             //UPDATE: moved to GPS tab and hidden
@@ -302,8 +301,6 @@ configurationTab.initialize = function (callback, scrollPosition) {
     }
 };
 
-configurationTab.cleanup = function (callback) {
+TABS.configuration.cleanup = function (callback) {
     if (callback) callback();
 };
-
-export default configurationTab;

@@ -60,5 +60,5 @@ BOARD.findDefinition = function (identifier) {
     return DEFAULT_BOARD_DEFINITION;
 };
 
-export default BOARD;
+module.exports = BOARD;
 

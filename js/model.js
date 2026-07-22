@@ -1,7 +1,7 @@
 'use strict';
 
-import MotorMixRule from './motorMixRule';
-import ServoMixRule from './servoMixRule';
+const MotorMixRule = require('./motorMixRule');
+const ServoMixRule = require('./servoMixRule');
 
 const SERVO = {
     GIMBAL_PITCH: 0,
@@ -829,4 +829,4 @@ var platform = (function (platforms) {
     return publicScope;
 })(platformList);
 
-export { mixer, platform, PLATFORM, SERVO, INPUT, STABILIZED };
+module.exports = { mixer, platform, PLATFORM, SERVO, INPUT, STABILIZED };

@@ -1,10 +1,13 @@
 'use strict';
 
-import './../injected_methods';
-import i18n from './../localization';
-import GUI from './../gui';
-import { globalSettings } from '../globalSettings';
-import dialog from '../dialog';
+const semver = require('semver');
+
+require('./../injected_methods');
+const jBox = require('./../libraries/jBox/jBox.min');
+const i18n = require('./../localization');
+const { GUI } = require('./../gui');
+const { globalSettings } = require('../globalSettings');
+const Store = require('electron-store');
 
 
 var ublox = (function () {
@@ -182,8 +185,9 @@ var ublox = (function () {
 
 
     function loadError(e) {
-        dialog.alert(i18n.getMessage("gpsAssistnowLoadDataError"));
-        console.log(JSON.stringify(e));
+        GUI.alert(i18n.getMessage("gpsAssistnowLoadDataError"));
+        var dec = new TextDecoder('utf-8');
+        GUI.log(JSON.stringify(e));
     }
 
     // For more info on assistnow, check:
@@ -208,7 +212,7 @@ var ublox = (function () {
         }
 
         getBinaryData(url, processOfflineData, loadError);
-        //$.get(url, processOfflineData).fail(async function() {dialog.alert("Error loading Offline data")});
+        //$.get(url, processOfflineData).fail(function() {GUI.alert("Error loading Offline data")});
     };
 
     self.loadAssistnowOnline = function(callback) {
@@ -249,4 +253,4 @@ var ublox = (function () {
 })();
 
 
-export default ublox;
+module.exports = ublox;

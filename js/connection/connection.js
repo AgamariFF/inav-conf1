@@ -1,6 +1,6 @@
 'use strict';
 
-import GUI from './../gui';
+const { GUI } = require('./../gui');
 
 const ConnectionType = {
     Serial: 0,
@@ -132,20 +132,15 @@ class Connection {
         if (this._connectionId) {
             this.emptyOutputBuffer();
             this.removeAllListeners();
-
-            // Clean up IPC listeners if the subclass implements this method
-            if (typeof this.removeIpcListeners === 'function') {
-                this.removeIpcListeners();
-            }
-
-            this.disconnectImplementation(result => {
-
+            
+            this.disconnectImplementation(result => {           
+    
                 if (result) {
                     console.log('Connection with ID: ' + this._connectionId + ' closed, Sent: ' + this._bytesSent + ' bytes, Received: ' + this._bytesReceived + ' bytes');
                 } else {
                     console.log('Failed to close connection with ID: ' + this._connectionId + ' closed, Sent: ' + this._bytesSent + ' bytes, Received: ' + this._bytesReceived + ' bytes');
                 }
-
+                
                 this._connectionId = false;
                 if (callback) {
                     callback(result);
@@ -224,7 +219,7 @@ class Connection {
 
     addOnReceiveListener(callback) {
         this._onReceiveListeners.push(callback);
-        // Note: Don't call addOnReceiveCallback here - it would duplicate the push
+        this.addOnReceiveCallback(callback)
     }
 
     addOnReceiveErrorCallback(callback) {
@@ -237,7 +232,7 @@ class Connection {
 
     addOnReceiveErrorListener(callback) {
         this._onReceiveErrorListeners.push(callback);
-        // Note: Don't call addOnReceiveErrorCallback here - it would duplicate the push
+        this.addOnReceiveErrorCallback(callback)
     }
 
     removeAllListeners() {
@@ -268,4 +263,4 @@ class Connection {
     }
 }
 
-export  { ConnectionType, Connection};
+module.exports = { ConnectionType, Connection};

@@ -1,6 +1,6 @@
 'use strict';
 
-import MotorMixRule from './motorMixRule';
+const MotorMixRule = require('./motorMixRule');
 
 var MotorMixerRuleCollection = function () {
 
@@ -74,4 +74,4 @@ var MotorMixerRuleCollection = function () {
     return self;
 };
 
-export default MotorMixerRuleCollection;
+module.exports = MotorMixerRuleCollection;

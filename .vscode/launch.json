@@ -12,8 +12,7 @@
         "args": ["--inspect", "--no-sandbox"],
         "env": {
           "NODE_ENV": "development",
-          "NODE_PATH": "${workspaceFolder}/js/",
-          "DEV_TOOLS_MODE": "undocked" // left, right, bottom, undocked, detach
+          "NODE_PATH": "${workspaceFolder}/js/"
         },
         "cwd": "${workspaceFolder}",
         "console": "integratedTerminal"

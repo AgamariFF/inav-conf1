@@ -1,6 +1,6 @@
 'use strict';
 
-import  { constrain } from './helpers';
+const  { constrain } = require('./helpers')
 
 var MotorMixRule = function (throttle, roll, pitch, yaw) {
 
@@ -68,4 +68,4 @@ var MotorMixRule = function (throttle, roll, pitch, yaw) {
     return self;
 };
 
-export default MotorMixRule;
+module.exports = MotorMixRule;

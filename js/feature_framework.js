@@ -21,9 +21,9 @@ helper.features.execute(function () {
 
 */
 
-import mspHelper from './msp/MSPHelper';
-import BitHelper from './bitHelper';
-import FC from './fc';
+const mspHelper = require('./msp/MSPHelper');
+const BitHelper = require('./bitHelper');
+const FC = require('./fc');
 
 var features = (function() {
 
@@ -88,4 +88,4 @@ var features = (function() {
     return publicScope;
 })();
 
-export default features;
+module.exports = features;

@@ -1,6 +1,6 @@
 'use strict';
 
-import BitHelper from "./bitHelper";
+const BitHelper = require("./bitHelper");
 
 var OutputMappingCollection = function () {
     let self = {},
@@ -208,4 +208,4 @@ var OutputMappingCollection = function () {
     return self;
 }
 
-export default OutputMappingCollection;
+module.exports = OutputMappingCollection;

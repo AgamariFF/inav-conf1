@@ -1,8 +1,10 @@
 'use strict';
 
-import GUI from './../js/gui';
-import ConnectionSerial from './connection/connectionSerial';
-import store from './store';
+const Store = require('electron-store');
+const store = new Store();
+
+const { GUI } = require('./../js/gui');
+const ConnectionSerial = require('./connection/connectionSerial');
 
 var usbDevices =  [
     { 'vendorId': 1155, 'productId': 57105}, 
@@ -26,7 +28,8 @@ PortHandler.initialize = function () {
 PortHandler.check = function () {
     var self = this;
 
-    ConnectionSerial.getDevices().then((all_ports) => {
+    ConnectionSerial.getDevices(function(all_ports) {
+
         // filter out ports that are not serial
         let current_ports = [];
         for (var i = 0; i < all_ports.length; i++) {
@@ -78,7 +81,7 @@ PortHandler.check = function () {
 
             // auto-select last used port (only during initialization)
             if (!self.initial_ports) {
-                const last_used_port = store.get('last_used_port', false);
+                var last_used_port = store.get('last_used_port', false);
                 // if last_used_port was set, we try to select it
                 if (last_used_port) {
                     if (last_used_port == "ble" || last_used_port == "tcp" || last_used_port == "udp" || last_used_port == "sitl" || last_used_port == "sitl-demo") {
@@ -156,11 +159,9 @@ PortHandler.check = function () {
         self.check_usb_devices();
 
         GUI.updateManualPortVisibility();
-        
         setTimeout(function () {
             self.check();
         }, 250);
-        
     });
 };
 
@@ -297,4 +298,4 @@ PortHandler.flush_callbacks = function () {
     return killed;
 };
 
-export  { usbDevices, PortHandler };
+module.exports = { usbDevices, PortHandler };

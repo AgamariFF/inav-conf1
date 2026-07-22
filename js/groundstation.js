@@ -1,24 +1,13 @@
 'use strict';
 
-import Map from 'ol/Map.js';
-import OSM from 'ol/source/OSM.js';
-import TileWMS from 'ol/source/TileWMS'
-import XYZ from 'ol/source/XYZ.js';
-import TileLayer from 'ol/layer/Tile.js';
-import { fromLonLat } from 'ol/proj';
-import View from 'ol/View.js'
-import Style from 'ol/style/Style'
-import Icon from 'ol/style/Icon';
-import Point from 'ol/geom/Point.js';
-import Feature from 'ol/Feature';
-import VectorSource from 'ol/source/Vector.js';
-import VectorLayer from 'ol/layer/Vector.js';
+const path = require('path');
+const ol = require('openlayers');
 
-import GUI from './gui';
-import ltmDecoder from './ltmDecoder';
-import interval from './intervals';
-import { globalSettings } from './globalSettings';
-import i18n from './localization';
+const { GUI } = require('./gui');
+const ltmDecoder = require('./ltmDecoder');
+const interval = require('./intervals');
+const { globalSettings } = require('./globalSettings');
+const i18n = require('./localization');
 
 const groundstation = (function () {
 
@@ -29,7 +18,7 @@ const groundstation = (function () {
     privateScope.$viewport = null;
     privateScope.$gsViewport = null;
     privateScope.mapHandler = null;
-    privateScope.mapLayers =  [];
+    privateScope.mapLayer = null;
     privateScope.mapView = null;
 
     privateScope.cursorStyle = null;
@@ -78,49 +67,35 @@ const groundstation = (function () {
     privateScope.initMap = function () {
 
         //initialte layers
-        if (globalSettings.mapProviderType == 'esri') {
-            privateScope.mapLayers.push(new TileLayer({
-                source: new XYZ({
-                    url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-                    attributions: 'Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',
-                    maxZoom: 19
-                })
-            }));
-            privateScope.mapLayers.push(new TileLayer({
-                source: new XYZ({
-                    url: 'https://services.arcgisonline.com/arcgis/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
-                    maxZoom: 19
-                })
-            }));
-            privateScope.mapLayers.push(new TileLayer({
-                source: new XYZ({
-                    url: 'https://services.arcgisonline.com/arcgis/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-                    maxZoom: 19
-                })
-            }));
-        } else if ( globalSettings.mapProviderType == 'mapproxy' ) {
-            privateScope.mapLayers.push(new TileLayer({
-                source: new oTileWMS({
-                            url: globalSettings.proxyURL,
-                            params: {'LAYERS':globalSettings.proxyLayer}
-                        })
-            }));
+        if (globalSettings.mapProviderType == 'bing') {
+            privateScope.mapLayer = new ol.source.BingMaps({
+                key: globalSettings.mapApiKey,
+                imagerySet: 'AerialWithLabels',
+                maxZoom: 19
+            });
+        } else if (globalSettings.mapProviderType == 'mapproxy') {
+            privateScope.mapLayer = new ol.source.TileWMS({
+                url: globalSettings.proxyURL,
+                params: { 'LAYERS': globalSettings.proxyLayer }
+            })
         } else {
-            privateScope.mapLayers.push(new TileLayer({
-                source: new OSM()
-            }));
+            privateScope.mapLayer = new ol.source.OSM();
         }
 
         //initiate view
-        privateScope.mapView = new View({
-            center: fromLonLat([0, 0]),
+        privateScope.mapView = new ol.View({
+            center: ol.proj.fromLonLat([0, 0]),
             zoom: 3
         });
 
         //initiate map handler
-        privateScope.mapHandler = new Map({
-            target: 'groundstation-map',
-            layers: privateScope.mapLayers,
+        privateScope.mapHandler = new ol.Map({
+            target: document.getElementById('groundstation-map'),
+            layers: [
+                new ol.layer.Tile({
+                    source: privateScope.mapLayer
+                })
+            ],
             view: privateScope.mapView
         });
     };
@@ -160,26 +135,26 @@ const groundstation = (function () {
             if (!privateScope.mapInitiated) {
 
                 //Place UAV on the map
-                privateScope.cursorStyle = new Style({
-                    image: new Icon(({
+                privateScope.cursorStyle = new ol.style.Style({
+                    image: new ol.style.Icon(({
                         anchor: [0.5, 0.5],
                         opacity: 1,
                         scale: 0.6,
                         src: path.join(__dirname, './../images/icons/icon_mission_airplane.png')
                     }))
                 });
-                privateScope.cursorPosition = new Point(fromLonLat([lon, lat]));
+                privateScope.cursorPosition = new ol.geom.Point(ol.proj.fromLonLat([lon, lat]));
 
-                privateScope.cursorFeature = new Feature({
+                privateScope.cursorFeature = new ol.Feature({
                     geometry: privateScope.cursorPosition
                 });
 
                 privateScope.cursorFeature.setStyle(privateScope.cursorStyle);
 
-                privateScope.cursorVector = new VectorSource({
+                privateScope.cursorVector = new ol.source.Vector({
                     features: [privateScope.cursorFeature]
                 });
-                privateScope.cursorLayer = new VectorLayer({
+                privateScope.cursorLayer = new ol.layer.Vector({
                     source: privateScope.cursorVector
                 });
 
@@ -191,7 +166,7 @@ const groundstation = (function () {
             }
 
             //Update map center
-            let position = fromLonLat([lon, lat]);
+            let position = ol.proj.fromLonLat([lon, lat]);
             privateScope.mapView.setCenter(position);
 
             //Update position of cursor
@@ -226,4 +201,4 @@ const groundstation = (function () {
     return publicScope;
 })();
 
-export default groundstation;
+module.exports = groundstation;

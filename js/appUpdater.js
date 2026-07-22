@@ -1,10 +1,10 @@
 'use strict';
 
-import semver from 'semver';
+const semver = require('semver');
 
-import GUI from './gui';
-import jBox from 'jbox';
-import i18n from './localization';
+const { GUI } = require('./gui');
+const jBox = require('./libraries/jBox/jBox.min');
+const i18n = require('./localization');
 
 var appUpdater = appUpdater || {};
 
@@ -16,28 +16,19 @@ appUpdater.checkRelease = function (currVersion) {
         let newVersion = releaseData.tag_name;
         let newPrerelase = releaseData.prerelease;
 
-        let updateAvailable = false;
-        try {
-            updateAvailable = !newPrerelase && semver.gt(newVersion, currVersion);
-        } catch (_) {
-            // Non-semver version string (e.g. untagged dev builds) — skip update check
-        }
+        if (newPrerelase == false && semver.gt(newVersion, currVersion)) {
+            GUI.log(newVersion, app.getVersion());
+            GUI.log(currVersion);
 
-        if (updateAvailable) {
-            window.electronAPI.appGetVersion().then(currentVersion => {
-                GUI.log(newVersion, currentVersion);
-                GUI.log(currVersion);
-
-                GUI.log(i18n.getMessage('newVersionAvailable'));
-                modalStart = new jBox('Modal', {
-                    width: 400,
-                    height: 200,
-                    animation: false,
-                    closeOnClick: false,
-                    closeOnEsc: true,
-                    content: $('#appUpdateNotification')
-                }).open();
-            });
+            GUI.log(i18n.getMessage('newVersionAvailable'));
+            modalStart = new jBox('Modal', {
+                width: 400,
+                height: 200,
+                animation: false,
+                closeOnClick: false,
+                closeOnEsc: true,
+                content: $('#appUpdateNotification')
+            }).open();
         }
     });
 
@@ -49,4 +40,4 @@ appUpdater.checkRelease = function (currVersion) {
     });
 };
 
-export default appUpdater;
+module.exports = appUpdater;

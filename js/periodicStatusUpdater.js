@@ -1,10 +1,11 @@
 'use strict';
 
-import GUI from './gui';
-import FC from './fc';
-import CONFIGURATOR from './data_storage';
-import MSP from './msp';
-import MSPCodes from './msp/MSPCodes';
+const { GUI } = require('./gui');
+const FC = require('./fc');
+const CONFIGURATOR = require('./data_storage');
+const MSP = require('./msp');
+const MSPCodes = require('./msp/MSPCodes');
+const mspQueue = require('./serial_queue');
 
  var periodicStatusUpdater = (function () {
 
@@ -39,20 +40,22 @@ import MSPCodes from './msp/MSPCodes';
 
         var active = ((Date.now() - MSP.analog_last_received_timestamp) < publicScope.getUpdateInterval(CONFIGURATOR.connection.bitrate) * 3);
 
-        if (FC.isModeEnabled('ARM')) {
-            $("#armedIcon").removeClass('armed');
-            $("#armedIcon").addClass('armed-active');
-        } else {
-            $("#armedIcon").removeClass('armed-active');
-            $("#armedIcon").addClass('armed');
-        }
-        if (FC.isModeEnabled('FAILSAFE')) {
-            $("#failsafeicon").removeClass('failsafe');
-            $("#failsafeicon").addClass('failsafe-active');
-        } else {
-            $("#failsafeicon").removeClass('failsafe-active');
-            $("#failsafeicon").addClass('failsafe');
-        }
+        if (FC.isModeEnabled('ARM'))
+            $(".armedicon").css({
+                'background-image': 'url("./images/icons/cf_icon_armed_active.svg")'
+            });
+        else
+            $(".armedicon").css({
+                'background-image': 'url("./images/icons/cf_icon_armed_grey.svg")'
+            });
+        if (FC.isModeEnabled('FAILSAFE'))
+            $(".failsafeicon").css({
+                'background-image': 'url("./images/icons/cf_icon_failsafe_active.svg")'
+            });
+        else
+            $(".failsafeicon").css({
+                'background-image': 'url("./images/icons/cf_icon_failsafe_grey.svg")'
+            });
 
         if (FC.ANALOG != undefined) {
             var nbCells;
@@ -68,11 +71,13 @@ import MSPCodes from './msp/MSPCodes';
             });
         
             if (active) {
-                $("#linkicon").removeClass('link');
-                $("#linkicon").addClass('link-active');
+                $(".linkicon").css({
+                    'background-image': 'url("./images/icons/cf_icon_link_active.svg")'
+                });
             } else {
-                $("#linkicon").removeClass('link-active');
-                $("#linkicon").addClass('link');
+                $(".linkicon").css({
+                    'background-image': 'url("./images/icons/cf_icon_link_grey.svg")'
+                });
             }
 
             if (((FC.ANALOG.use_capacity_thresholds && FC.ANALOG.battery_remaining_capacity <= FC.MISC.battery_capacity_warning - FC.MISC.battery_capacity_critical) || (!FC.ANALOG.use_capacity_thresholds && FC.ANALOG.voltage < warn)) || FC.ANALOG.voltage < min) {
@@ -97,7 +102,7 @@ import MSPCodes from './msp/MSPCodes';
             display: 'inline-block'
         });
 
-        if (!stoppped && !CONFIGURATOR.cliActive) {
+        if (!stoppped && GUI.active_tab != 'cli') {
 
             MSP.send_message(MSPCodes.MSP_SENSOR_STATUS, false, false);
             MSP.send_message(MSPCodes.MSPV2_INAV_STATUS, false, false);
@@ -120,4 +125,4 @@ import MSPCodes from './msp/MSPCodes';
     return publicScope;
 })();
 
-export default periodicStatusUpdater;
+module.exports = periodicStatusUpdater;

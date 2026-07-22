@@ -1,9 +1,9 @@
 'use strict'
 
-import CONFIGURATOR from './data_storage';
-import FC from './fc';
-import { globalSettings } from './globalSettings';
-import i18n from './localization';
+const CONFIGURATOR = require('./data_storage');
+const FC = require('./fc');
+const { globalSettings } = require('./globalSettings');
+const i18n = require('./localization');
 
 var update = {
 
@@ -37,5 +37,5 @@ var update = {
     }
 };
 
-export default update;
+module.exports = update;
 

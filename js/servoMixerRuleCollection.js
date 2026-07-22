@@ -1,6 +1,6 @@
 'use strict';
 
-import ServoMixRule from './servoMixRule';
+const ServoMixRule = require('./servoMixRule');
 
 var ServoMixerRuleCollection = function () {
 
@@ -119,13 +119,25 @@ var ServoMixerRuleCollection = function () {
     };
 
     self.getUsedServoIndexes = function () {
-        let out = new Set();
+        let out = [];
 
-        data.forEach(rule => {
-            if (rule.isUsed()) out.add(rule.getTarget());
-        });
+        for (let ruleIndex in data) {
+            if (data.hasOwnProperty(ruleIndex)) {
+                let rule = data[ruleIndex];
+                out.push(rule.getTarget());
+            }
+        }
+        for (let ruleIndex in inactiveData) {
+            if (inactiveData.hasOwnProperty(ruleIndex)) {
+                let rule = inactiveData[ruleIndex];
+                out.push(rule.getTarget());
+            }
+        }
 
-        return Array.from(out).sort((a, b) => a - b);
+
+        let minIndex = Math.min(...out);
+        let maxIndex = Math.max(...out);
+        return Array.from({ length: maxIndex - minIndex + 1 }, (_, index) => minIndex + index);
     }
 
     self.getNextUnusedIndex = function() {
@@ -146,4 +158,4 @@ var ServoMixerRuleCollection = function () {
     return self;
 };
 
-export default ServoMixerRuleCollection;
+module.exports = ServoMixerRuleCollection;

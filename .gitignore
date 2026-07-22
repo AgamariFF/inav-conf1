@@ -6,7 +6,6 @@ npm-debug.log
 npm-debug.log
 inav-configurator.iml
 /out
-/.vite
 .eslintrc.json
 /.project
 /cache/
@@ -17,8 +16,4 @@ inav-configurator.iml
 *.swp
 *.bak
 eeprom.bin
-
-# ctags
-tags
-TAGS
-start-with-debugging.sh
+yarn.lock

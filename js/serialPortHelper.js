@@ -1,8 +1,8 @@
 'use strict';
 
-import FC from './fc';
-import BitHelper from './bitHelper';
-import i18n from './localization';
+const FC = require('./fc');
+const i18n = require('./localization');
+const bitHelper = require('./bitHelper');
 
 const serialPortHelper = (function () {
 
@@ -259,7 +259,7 @@ const serialPortHelper = (function () {
             let key = functions[index];
             let bitIndex = privateScope.functionIDs[key];
             if (bitIndex >= 0) {
-                mask = BitHelper.bit_set(mask, bitIndex);
+                mask = bitHelper.bit_set(mask, bitIndex);
             }
         }
         return mask;
@@ -277,7 +277,7 @@ const serialPortHelper = (function () {
         for (let index = 0; index < keys.length; index++) {
             let key = keys[index];
             let bit = privateScope.functionIDs[key];
-            if (BitHelper.bit_check(mask, bit)) {
+            if (bitHelper.bit_check(mask, bit)) {
                 functions.push(key);
             }
         }
@@ -368,4 +368,4 @@ const serialPortHelper = (function () {
     return publicScope;
 })();
 
-export default serialPortHelper;
+module.exports = serialPortHelper;

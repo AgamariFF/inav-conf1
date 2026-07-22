@@ -24,4 +24,4 @@ let LogicConditionsStatus = function () {
     return self;
 };
 
-export default LogicConditionsStatus;
+module.exports = LogicConditionsStatus;

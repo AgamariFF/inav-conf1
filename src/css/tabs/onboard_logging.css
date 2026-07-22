@@ -307,7 +307,3 @@
     float: right;
     width: calc(50%);
 }
-
-.tab-onboard_logging .right {
-    position: relative !important;
-}

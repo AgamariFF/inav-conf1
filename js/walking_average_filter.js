@@ -29,4 +29,4 @@ var WalkingAverageFilter = function (maxLength) {
 
     return self;
 };
-export default WalkingAverageFilter;
+module.exports = WalkingAverageFilter;

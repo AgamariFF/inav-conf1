@@ -83,11 +83,11 @@
                                 <input type="text" id="pilot_name" data-setting="pilot_name" data-live="true" />
                                 <span data-i18n="osd_pilot_name"></span>
                             </label>
+                            <div for="usePilotLogo" class="helpicon cf_tip osd_use_large_pilot_logo" data-i18n_title="osd_use_large_pilot_logo_help"></div>
                             <label>
                                 <input type="checkbox" id="usePilotLogo" class="toggle update_preview" data-setting="osd_use_pilot_logo" data-live="true">
                                 <span data-i18n="osd_use_pilot_logo"></span>
                             </label>
-                            <div for="usePilotLogo" class="helpicon cf_tip" data-i18n_title="osdElement_PILOT_LOGO_HELP"></div>
                             <label class="craft_name">
                                 <input type="text" id="craft_name" data-setting="name" data-live="true" />
                                 <span data-i18n="osd_craft_name"></span>
@@ -322,7 +322,7 @@
 
                 <div class="gui_box grey switch-indicator-container">
                     <div class="gui_box_titlebar">
-                        <div for="osd_switch_indicator_settings" class="helpicon cf_tip" data-i18n_title="osd_switch_indicator_settings_HELP"></div>
+                        <a href="https://github.com/iNavFlight/inav/wiki/OSD-custom-messages" target="_blank"></a><div for="osd_switch_indicator_settings" class="helpicon cf_tip" data-i18n_title="osd_switch_indicator_settings_HELP"></div></a>
                         <div class="spacer_box_title" data-i18n="osd_switch_indicator_settings"></div>
                     </div>
                     <div class="spacer_box settings">
@@ -358,13 +358,10 @@
 
                 <div class="gui_box grey custom-element-container">
                     <div class="gui_box_titlebar">
-                        <a href="https://github.com/iNavFlight/inav/wiki/OSD-custom-messages" target="_blank"><div for="osd_custom_element_settings" class="helpicon cf_tip" data-i18n_title="osd_custom_element_settings_HELP"></div></a>
+                        <a href="https://github.com/iNavFlight/inav-configurator/tree/master/resources/osd/INAV%20Character%20Map.md" id="INAVCharacterMapDocURL" target="_blank"><div for="osd_custom_element_settings" class="helpicon cf_tip" data-i18n_title="osd_custom_element_settings_HELP"></div></a>
                         <div class="spacer_box_title" data-i18n="osd_custom_element_settings"></div>
                     </div>
                     <div class="spacer_box settings" id="osdCustomElements"></div>
-                    <div class="spacer_box osd_customelement_icons_help">
-                        <a href="https://github.com/iNavFlight/inav-configurator/tree/master/resources/osd/INAV%20Character%20Map.md" id="INAVCharacterMapDocURL" target="_blank"><div for="osd_custom_element_settings_icons" class="helpicon cf_tip osd_customelement_icons_help" data-i18n_title="osd_custom_element_settings_icons_HELP"></div></a>
-                    </div>
                 </div>
 
 
@@ -381,10 +378,10 @@
                         </label>
 
                         <div id="osd_pan_settings">
-                            <div for="osdPanServoRangeDecadegrees" class="helpicon cf_tip" data-i18n_title="osdPanServoRangeDecadegrees_HELP"></div>
-                            <label for="osdPanServoRangeDecadegrees">
-                                <input id="osdPanServoRangeDecadegrees" data-setting="osd_pan_servo_range_decadegrees" data-unit="decadeg" data-setting-multiplier="1" type="number" data-step="1" />
-                                <span data-i18n="osdPanServoRangeDecadegrees"></span>
+                            <div for="osdPanServoPwm2centideg" class="helpicon cf_tip" data-i18n_title="osdPanServoPwm2centideg_HELP"></div>
+                            <label for="osdPanServoPwm2centideg">
+                                <input id="osdPanServoPwm2centideg" data-setting="osd_pan_servo_pwm2centideg" data-unit="centideg-deg" data-setting-multiplier="1" type="number" data-step="1" />
+                                <span data-i18n="osdPanServoPwm2centideg"></span>
                             </label>
                             <label for="osdPanServoIndicatorShowDegrees">
                                 <input type="checkbox" id="osdPanServoIndicatorShowDegrees" data-setting="osd_pan_servo_indicator_show_degrees" data-live="true" class="toggle"></select>

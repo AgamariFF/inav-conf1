@@ -1,12 +1,10 @@
 'use strict';
 
-import { getLength } from 'ol/sphere';
-import { LineString } from 'ol/geom';
-import { fromLonLat } from 'ol/proj';
+const ol = require('openlayers');
 
-import MWNP from './mwnp';
-import Waypoint from './waypoint';
-import BitHelper from './bitHelper';
+const MWNP = require('./mwnp');
+const Waypoint = require('./waypoint');
+const BitHelper = require('./bitHelper');
 
 let WaypointCollection = function () {
 
@@ -322,16 +320,6 @@ let WaypointCollection = function () {
         return outputNumber;
     }
 
-    self.convertWaypointToJumpNumber = function(jumpId) {
-        let outputNumber = 0;
-        self.getNonAttachedList().forEach(function (element) {
-            if (element.getNumber() == jumpId) {
-                outputNumber = element.getLayerNumber();
-            }
-        });
-        return outputNumber;
-    }
-
     self.isJumpTargetAttached = function(waypoint) {
         let lJumptTargetAttached = [];
         data.forEach(function (element) {
@@ -373,7 +361,7 @@ let WaypointCollection = function () {
                     point2measure.push([self.getWaypoint(nStart).getLatMap(), self.getWaypoint(nStart).getLonMap()]);
                 }
                 else {
-                    point2measure.push(fromLonLat([self.getWaypoint(nStart).getLonMap(), self.getWaypoint(nStart).getLatMap()]));
+                    point2measure.push(ol.proj.fromLonLat([self.getWaypoint(nStart).getLonMap(), self.getWaypoint(nStart).getLatMap()]));
                 }
                 altPoint2measure.push(self.getWaypoint(nStart).getAlt());
                 namePoint2measure.push(self.getWaypoint(nStart).getLayerNumber()+1);
@@ -422,7 +410,7 @@ let WaypointCollection = function () {
             let oldCoord = [];
             point2measure.forEach(function (coord) {
                 if (oldCoord != 'undefined' && oldCoord != []) {
-                    lengthLine.push(getLength(new LineString([oldCoord, coord])));
+                    lengthLine.push(ol.Sphere.getLength(new ol.geom.LineString([oldCoord, coord])));
                 }
                 oldCoord = coord;
             });
@@ -433,16 +421,19 @@ let WaypointCollection = function () {
 
     self.getElevation = async function(globalSettings) {
         const [nLoop, point2measure, altPoint2measure, namePoint2measure, refPoint2measure] = self.getPoint2Measure(true);
-        // false: real distance; true returns -1 for looping JUMP missions, zeroing samples
-        let lengthMission = self.getDistance(false);
+        let lengthMission = self.getDistance(true);
         let totalMissionDistance = lengthMission.length >= 1 ? lengthMission[lengthMission.length -1].toFixed(1) : 0;
         let samples;
         let sampleMaxNum;
         let sampleDistance;
 
-        sampleMaxNum = 99;
-        sampleDistance = 60;
-        
+        if (globalSettings.mapProviderType == 'bing') {
+            sampleMaxNum = 1024;
+            sampleDistance = 30;
+        } else {    // use opentopodata.org instead
+            sampleMaxNum = 99;
+            sampleDistance = 60;
+        }
 
         if (point2measure.length <= 2){
             samples = 1;
@@ -454,26 +445,40 @@ let WaypointCollection = function () {
             samples = sampleMaxNum;
         }
 
-        samples = Math.max(1, samples); // opentopodata rejects < 2 samples (we send samples+1)
+        let elevation = "N/A";
+        if (globalSettings.mapProviderType == 'bing') {
+            let elevationEarthModel = $('#elevationEarthModel').prop("checked") ? "ellipsoid" : "sealevel";
 
-        let elevation = [];
-        let coordList = "";
-        point2measure.forEach(function (item) {
-            coordList += item + '|';
-        });
-        const response = await fetch('https://api.opentopodata.org/v1/aster30m?locations='+coordList+'&samples='+String(samples+1));
-        const myJson = await response.json();
+            if (point2measure.length >1) {
+                const response = await fetch('http://dev.virtualearth.net/REST/v1/Elevation/Polyline?points='+point2measure+'&heights='+elevationEarthModel+'&samples='+String(samples+1)+'&key='+globalSettings.mapApiKey);
+                const myJson = await response.json();
+                elevation = myJson.resourceSets[0].resources[0].elevations;
+            }
+            else {
+                const response = await fetch('http://dev.virtualearth.net/REST/v1/Elevation/List?points='+point2measure+'&heights='+elevationEarthModel+'&key='+globalSettings.mapApiKey);
+                const myJson = await response.json();
+                elevation = myJson.resourceSets[0].resources[0].elevations;
+            }
+        }
+        else {
+            let coordList = "";
+            point2measure.forEach(function (item) {
+                coordList += item + '|';
+            });
+            const response = await fetch('https://api.opentopodata.org/v1/aster30m?locations='+coordList+'&samples='+String(samples+1));
+            const myJson = await response.json();
 
-        if (myJson.status == "OK") {
-            elevation = [];
-            for (var i = 0; i < myJson.results.length; i++){
-                if (myJson.results[i].elevation == null) {
-                    elevation[i] = 0;
-                } else {
-                    elevation[i] = myJson.results[i].elevation;
+            if (myJson.status == "OK") {
+                elevation = [];
+                for (var i = 0; i < myJson.results.length; i++){
+                    if (myJson.results[i].elevation == null) {
+                        elevation[i] = 0;
+                    } else {
+                        elevation[i] = myJson.results[i].elevation;
+                    }
                 }
             }
-        }        
+        }
         //console.log("elevation ", elevation);
         return [lengthMission, totalMissionDistance, samples, elevation, altPoint2measure, namePoint2measure, refPoint2measure];
     }
@@ -481,5 +486,5 @@ let WaypointCollection = function () {
     return self;
 };
 
-export default WaypointCollection;
+module.exports = WaypointCollection;
 

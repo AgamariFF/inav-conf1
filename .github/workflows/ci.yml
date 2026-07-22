@@ -14,21 +14,8 @@ on:
     #   type: boolean
 
 jobs:
-    save-pr-number:
-        runs-on: ubuntu-latest
-        # Only needed for pull_request events; workflow_call (release builds) skips this.
-        if: github.event_name == 'pull_request'
-        steps:
-            - name: Save PR number
-              run: echo "${{ github.event.pull_request.number }}" > pr_number.txt
-            - name: Upload PR number artifact
-              uses: actions/upload-artifact@v4
-              with:
-                name: pr-number
-                path: pr_number.txt
-
     build-linux:
-        runs-on: ubuntu-24.04
+        runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
             - name: Setup environment
@@ -50,8 +37,9 @@ jobs:
                 echo "BUILD_NAME=inav-configurator_linux_x64_${VERSION}_${BUILD_SUFFIX}" >> $GITHUB_ENV
             - uses: actions/setup-node@v4
               with:
-                node-version: 22
+                node-version: 20
                 #check-latest: true
+                #cache: 'npm'
             - name: Install dependencies
               run: sudo apt-get update && sudo apt-get -y install dpkg fakeroot rpm build-essential libudev-dev
             - name: Install deps
@@ -59,11 +47,13 @@ jobs:
               with:
                 max_attempts: 3
                 retry_on: error
-                command: yarn install
+                command: npm install --foreground-scripts
                 timeout_minutes: 10
                 on_retry_command: rm -rfv node_modules
+            - name: Remove other SITL binary
+              run: rm -v resources/sitl/linux/arm64/inav_SITL
             - name: Build Linux
-              run: yarn run make
+              run: npm run make
             - name: Upload Linux deb
               uses: actions/upload-artifact@v4
               with:
@@ -81,7 +71,7 @@ jobs:
                 path: ./out/make/zip/linux/x64/*.zip
 
     build-linux-aarch64:
-        runs-on: ubuntu-24.04
+        runs-on: ubuntu-24.04-arm
         steps:
             - uses: actions/checkout@v4
             - name: Setup environment
@@ -103,8 +93,9 @@ jobs:
                 echo "BUILD_NAME=inav-configurator_linux_aarch64_${VERSION}_${BUILD_SUFFIX}" >> $GITHUB_ENV
             - uses: actions/setup-node@v4
               with:
-                node-version: 22
+                node-version: 20
                 #check-latest: true
+                #cache: 'npm'
             - name: Install dependencies
               run: sudo apt-get update && sudo apt-get -y install dpkg fakeroot rpm build-essential libudev-dev
             - name: Install deps
@@ -112,11 +103,15 @@ jobs:
               with:
                 max_attempts: 3
                 retry_on: error
-                command: yarn install
+                command: npm install --foreground-scripts
                 timeout_minutes: 10
                 on_retry_command: rm -rfv node_modules
+            - name: Remove other SITL binary
+              run: |
+                mv -fv resources/sitl/linux/arm64/inav_SITL resources/sitl/linux/inav_SITL
+                rmdir -v resources/sitl/linux/arm64
             - name: Build Linux
-              run: yarn run make -- --arch="arm64"
+              run: npm run make
             - name: Upload Linux deb
               uses: actions/upload-artifact@v4
               with:
@@ -134,7 +129,7 @@ jobs:
                 path: ./out/make/zip/linux/arm64/*.zip
 
     build-mac-arm64:
-        runs-on: macos-15
+        runs-on: macos-13
         steps:
         - uses: actions/checkout@v4
         - name: Setup environment
@@ -155,8 +150,9 @@ jobs:
             echo "BUILD_NAMEarm64=inav-configurator_MacOS_arm64_${VERSION}_${BUILD_SUFFIX}" >> $GITHUB_ENV
         - uses: actions/setup-node@v4
           with:
-            node-version: 22
+            node-version: 20
             #check-latest: true
+            #cache: 'npm'
         # Workaround due to a bug in node-gyp: https://github.com/electron/rebuild/issues/1116
         - name: Install Setuptools
           run: python3 -m pip install --break-system-packages setuptools
@@ -165,11 +161,11 @@ jobs:
           with:
             max_attempts: 3
             retry_on: error
-            command: yarn install --foreground-scripts
+            command: npm install --foreground-scripts
             timeout_minutes: 10
             on_retry_command: rm -rfv node_modules
         - name: Build MacOS arm64
-          run: yarn run make -- --arch="arm64"
+          run: npm run make -- --arch="arm64"
         - name: Upload MacOS arm64 zip
           uses: actions/upload-artifact@v4
           with:
@@ -182,7 +178,7 @@ jobs:
             path: ./out/make/*arm64*.dmg
 
     build-mac:
-        runs-on: macos-15-intel
+        runs-on: macos-13
         steps:
         - uses: actions/checkout@v4
         - name: Setup environment
@@ -203,8 +199,9 @@ jobs:
             echo "BUILD_NAMEx64=inav-configurator_MacOS_x64_${VERSION}_${BUILD_SUFFIX}" >> $GITHUB_ENV
         - uses: actions/setup-node@v4
           with:
-            node-version: 22
+            node-version: 20
             #check-latest: true
+            #cache: 'npm'
         # Workaround due to a bug in node-gyp: https://github.com/electron/rebuild/issues/1116
         - name: Install Setuptools
           run: python3 -m pip install --break-system-packages setuptools
@@ -213,13 +210,11 @@ jobs:
           with:
             max_attempts: 3
             retry_on: error
-            command: yarn install --foreground-scripts
+            command: npm install --foreground-scripts
             timeout_minutes: 10
             on_retry_command: rm -rfv node_modules
         - name: Build MacOS x64
-          env:
-            NODE_OPTIONS: --max-old-space-size=4096
-          run: yarn run make -- --arch="x64"
+          run: npm run make -- --arch="x64"
         - name: Upload MacOS x64 zip
           uses: actions/upload-artifact@v4
           with:
@@ -257,7 +252,8 @@ jobs:
               shell: bash
             - uses: actions/setup-node@v4
               with:
-                node-version: 22
+                node-version: 20
+                #cache: 'npm'
             - uses: engineerd/configurator@v0.0.10
               with: 
                 name: "Wix Toolset 3.1.4"
@@ -268,11 +264,11 @@ jobs:
               with:
                 max_attempts: 3
                 retry_on: error
-                command: yarn install --foreground-scripts
+                command: npm install --foreground-scripts
                 timeout_minutes: 10
                 on_retry_command: rm -rfv node_modules
             - name: Build Win x64
-              run: yarn run make -- --arch="x64"
+              run: npm run make -- --arch="x64"
             - name: Upload Windows x64 zip
               uses: actions/upload-artifact@v4
               with:
@@ -310,7 +306,8 @@ jobs:
               shell: bash
             - uses: actions/setup-node@v4
               with:
-                node-version: 22
+                node-version: 20
+                #cache: 'npm'
             - uses: engineerd/configurator@v0.0.10
               with: 
                 name: "Wix Toolset 3.1.4"
@@ -321,11 +318,11 @@ jobs:
               with:
                 max_attempts: 3
                 retry_on: error
-                command: yarn install --foreground-scripts
+                command: npm install --foreground-scripts
                 timeout_minutes: 10
                 on_retry_command: rm -rfv node_modules
             - name: Build Win32
-              run: yarn run make -- --arch="ia32"
+              run: npm run make -- --arch="ia32"
             - name: Upload Windows ia32 zip
               uses: actions/upload-artifact@v4
               with:

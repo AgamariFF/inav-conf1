@@ -33,4 +33,4 @@ function swap(dict) {
     return rev_dict;
 }
 
-export default MWNP;
+module.exports = MWNP;

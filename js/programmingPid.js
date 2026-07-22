@@ -1,7 +1,8 @@
 'use strict';
 
-import GUI from './gui';
-import { OPERAND_TYPES } from './logicConditionOperantTypes';
+const FC = require('./fc');
+const { GUI } = require('./gui');
+const { OPERAND_TYPES } = require('./logicConditionOperantTypes');
 
 let ProgrammingPid = function (enabled, setpointType, setpointValue, measurementType, measurementValue, gainP, gainI, gainD, gainFF) {
     let self = {};
@@ -225,4 +226,4 @@ let ProgrammingPid = function (enabled, setpointType, setpointValue, measurement
     return self;
 };
 
-export default ProgrammingPid;
+module.exports = ProgrammingPid;

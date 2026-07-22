@@ -1,9 +1,9 @@
 'use strict';
 
-import mspHelper from './msp/MSPHelper';
-import serialPortHelper from './serialPortHelper';
-import FC from './fc';
-import features from './feature_framework';
+const mspHelper = require('./msp/MSPHelper');
+const serialPortHelper = require('./serialPortHelper');
+const FC = require('./fc');
+const features = require('./feature_framework');
 
 var wizardSaveFramework = (function () {
 
@@ -78,4 +78,4 @@ var wizardSaveFramework = (function () {
     return self;
 })();
 
-export default wizardSaveFramework;
+module.exports = wizardSaveFramework;

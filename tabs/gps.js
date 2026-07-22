@@ -1,69 +1,55 @@
 'use strict';
 
-import semver from 'semver';
-import Map from 'ol/Map.js';
-import XYZ from 'ol/source/XYZ.js';
-import OSM from 'ol/source/OSM.js';
-import TileWMS from 'ol/source/TileWMS'
-import TileLayer from 'ol/layer/Tile.js';
-import View from 'ol/View.js'
-import { fromLonLat } from 'ol/proj';
-import Style from 'ol/style/Style'
-import Icon from 'ol/style/Icon';
-import Text from 'ol/style/Text';
-import Fill from 'ol/style/Fill';
-import Point from 'ol/geom/Point.js';
-import Feature from 'ol/Feature';
-import VectorSource from 'ol/source/Vector.js';
-import VectorLayer from 'ol/layer/Vector.js';
+const path = require('path')
+const ol = require('openlayers')
+const semver = require('semver');
 
-import MSPChainerClass from './../js/msp/MSPchainer';
-import mspHelper from './../js/msp/MSPHelper';
-import MSPCodes from './../js/msp/MSPCodes';
-import MSP from './../js/msp';
-import interval from './../js/intervals';
-import GUI from './../js/gui';
-import FC from './../js/fc';
-import i18n from './../js/localization';
-import Settings from './../js/settings';
-import serialPortHelper from './../js/serialPortHelper';
-import features from './../js/feature_framework';
-import { globalSettings } from './../js/globalSettings';
-import jBox from 'jbox';
-import SerialBackend from '../js/serial_backend';
-import ublox from '../js/ublox/UBLOX';
-import dialog from '../js/dialog';
+const MSPChainerClass = require('./../js/msp/MSPchainer');
+const mspHelper = require('./../js/msp/MSPHelper');
+const MSPCodes = require('./../js/msp/MSPCodes');
+const MSP = require('./../js/msp');
+const interval = require('./../js/intervals');
+const { GUI, TABS } = require('./../js/gui');
+const FC = require('./../js/fc');
+const i18n = require('./../js/localization');
+const Settings = require('./../js/settings');
+const serialPortHelper = require('./../js/serialPortHelper');
+const features = require('./../js/feature_framework');
+const { globalSettings } = require('./../js/globalSettings');
+const jBox = require('./../js/libraries/jBox/jBox.min');
+const SerialBackend = require('../js/serial_backend');
+const ublox = require('../js/ublox/UBLOX');
 
 
-const gpsTab = {};
-gpsTab.initialize = function (callback) {
+TABS.gps = {};
+TABS.gps.initialize = function (callback) {
 
-    if (GUI.active_tab !== this) {
-        GUI.active_tab = this;
+    if (GUI.active_tab != 'gps') {
+        GUI.active_tab = 'gps';
     }
 
     // mavlink ADSB_EMITTER_TYPE
     const ADSB_VEHICLE_TYPE = {
-        0: {iconNum: 14, name: 'No info'}, // ADSB_EMITTER_TYPE_NO_INFO
-        1: {iconNum: 1,  name: 'Light'}, // ADSB_EMITTER_TYPE_LIGHT
-        2: {iconNum: 1,  name: 'Small'}, // ADSB_EMITTER_TYPE_SMALL
-        3: {iconNum: 2,  name: 'Large'}, // ADSB_EMITTER_TYPE_LARGE
-        4: {iconNum: 14, name: 'High vortex large'}, // ADSB_EMITTER_TYPE_HIGH_VORTEX_LARGE
-        5: {iconNum: 5,  name: 'Heavy'}, // ADSB_EMITTER_TYPE_HEAVY
-        6: {iconNum: 14, name: 'Manuv'}, // ADSB_EMITTER_TYPE_HIGHLY_MANUV
-        7: {iconNum: 13, name: 'Rotorcraft'}, // ADSB_EMITTER_TYPE_ROTOCRAFT
-        8: {iconNum: 14, name: 'Unassigned'}, // ADSB_EMITTER_TYPE_UNASSIGNED
-        9: {iconNum: 6,  name: 'Glider'}, // ADSB_EMITTER_TYPE_GLIDER
-        10:{iconNum: 7,  name: 'Lighter air'}, // ADSB_EMITTER_TYPE_LIGHTER_AIR
-        11:{iconNum: 15, name: 'Parachute'}, // ADSB_EMITTER_TYPE_PARACHUTE
-        12:{iconNum: 1,  name: 'Ultra light'}, // ADSB_EMITTER_TYPE_ULTRA_LIGHT
-        13:{iconNum: 14, name: 'Unassigned 2'}, // ADSB_EMITTER_TYPE_UNASSIGNED2
-        14:{iconNum: 8,  name: 'UAV'}, // ADSB_EMITTER_TYPE_UAV
-        15:{iconNum: 14, name: 'Space'}, // ADSB_EMITTER_TYPE_SPACE
-        16:{iconNum: 14, name: 'Unassigned 3'}, // ADSB_EMITTER_TYPE_UNASSGINED3
-        17:{iconNum: 9,  name: 'Surface'}, // ADSB_EMITTER_TYPE_EMERGENCY_SURFACE
-        18:{iconNum: 10, name: 'Service surface'}, // ADSB_EMITTER_TYPE_SERVICE_SURFACE
-        19:{iconNum: 12, name: 'Pint obstacle'}, // ADSB_EMITTER_TYPE_POINT_OBSTACLE
+        0: {icon: 'adsb_14.png', name: 'No info'}, // ADSB_EMITTER_TYPE_NO_INFO
+        1: {icon: 'adsb_1.png', name: 'Light'}, // ADSB_EMITTER_TYPE_LIGHT
+        2: {icon: 'adsb_1.png', name: 'Small'}, // ADSB_EMITTER_TYPE_SMALL
+        3: {icon: 'adsb_2.png', name: 'Large'}, // ADSB_EMITTER_TYPE_LARGE
+        4: {icon: 'adsb_14.png', name: 'High vortex large'}, // ADSB_EMITTER_TYPE_HIGH_VORTEX_LARGE
+        5: {icon: 'adsb_5.png', name: 'Heavy'}, // ADSB_EMITTER_TYPE_HEAVY
+        6: {icon: 'adsb_14.png', name: 'Manuv'}, // ADSB_EMITTER_TYPE_HIGHLY_MANUV
+        7: {icon: 'adsb_13.png', name: 'Rotorcraft'}, // ADSB_EMITTER_TYPE_ROTOCRAFT
+        8: {icon: 'adsb_14.png', name: 'Unassigned'}, // ADSB_EMITTER_TYPE_UNASSIGNED
+        9: {icon: 'adsb_6.png', name: 'Glider'}, // ADSB_EMITTER_TYPE_GLIDER
+        10:{icon:  'adsb_7.png', name: 'Lighter air'}, // ADSB_EMITTER_TYPE_LIGHTER_AIR
+        11:{icon:  'adsb_15.png', name: 'Parachute'}, // ADSB_EMITTER_TYPE_PARACHUTE
+        12:{icon:  'adsb_1.png', name: 'Ultra light'}, // ADSB_EMITTER_TYPE_ULTRA_LIGHT
+        13:{icon:  'adsb_14.png', name: 'Unassigned 2'}, // ADSB_EMITTER_TYPE_UNASSIGNED2
+        14:{icon:  'adsb_8.png', name: 'UAV'}, // ADSB_EMITTER_TYPE_UAV
+        15:{icon:  'adsb_14.png', name: 'Space'}, // ADSB_EMITTER_TYPE_SPACE
+        16:{icon:  'adsb_14.png', name: 'Unassigned 3'}, // ADSB_EMITTER_TYPE_UNASSGINED3
+        17:{icon:  'adsb_9.png', name: 'Surface'}, // ADSB_EMITTER_TYPE_EMERGENCY_SURFACE
+        18:{icon:  'adsb_10.png', name: 'Service surface'}, // ADSB_EMITTER_TYPE_SERVICE_SURFACE
+        19:{icon:  'adsb_12.png', name: 'Pint obstacle'}, // ADSB_EMITTER_TYPE_POINT_OBSTACLE
     };
 
     var loadChainer = new MSPChainerClass();
@@ -106,18 +92,9 @@ gpsTab.initialize = function (callback) {
             });
         });
     }
-    
-    async function loadIcons() {
-        for (let i = 0; i <= 19; i++) {
-            ADSB_VEHICLE_TYPE[i].icon = (await import(`./../resources/adsb/adsb_${ADSB_VEHICLE_TYPE[i].iconNum}.png?inline`)).default;
-        }
-        arrowIcon = (await import('./../images/icons/map/cf_icon_position.png?inline')).default;
-    }
 
-    async function load_html() {
-        const { default: html } = await import('./gps.html?raw');
-        await loadIcons();
-        GUI.load(html, Settings.processHtml(process_html));
+    function load_html() {
+        GUI.load(path.join(__dirname, "gps.html"), Settings.processHtml(process_html));
     }
 
     let cursorInitialized = false;
@@ -128,16 +105,9 @@ gpsTab.initialize = function (callback) {
 
     let vehicleVectorSource;
     let vehiclesCursorInitialized = false;
-    let arrowIcon;
 
-    async function process_html(settingsPromise) {
-        // Wait for settings to finish loading to avoid race conditions
-        // where user changes are overwritten by background setting loads
-        if (settingsPromise) {
-            await settingsPromise;
-        }
-
-        i18n.localize();
+    function process_html() {
+       i18n.localize();;
 
         var fcFeatures = FC.getFeatures();
 
@@ -206,217 +176,46 @@ gpsTab.initialize = function (callback) {
 
         gps_ubx_sbas_e.val(FC.MISC.gps_ubx_sbas);
 
-        // GPS Preset Configuration
-        const GPS_PRESETS = {
-            m8: {
-                name: "u-blox M8",
-                galileo: true,
-                glonass: true,
-                beidou: true,
-                rate: 8,
-                description: [
-                    "4 GNSS constellations for maximum accuracy",
-                    "8Hz update rate (conservative for M8)",
-                    "Best for: Navigation, position hold, slower aircraft"
-                ]
-            },
-            'm9-precision': {
-                name: "u-blox M9 (Precision Mode)",
-                galileo: true,
-                glonass: false,
-                beidou: true,
-                rate: 5,
-                description: [
-                    "3 GNSS constellations (GPS+Galileo+Beidou) → 32 satellites",
-                    "5Hz update rate, HDOP ~1.0-1.3",
-                    "Best for: Long-range cruise, position hold, navigation missions"
-                ]
-            },
-            'm9-sport': {
-                name: "u-blox M9 (Sport Mode)",
-                galileo: true,
-                glonass: false,
-                beidou: true,
-                rate: 10,
-                description: [
-                    "3 GNSS constellations (GPS+Galileo+Beidou) → 16 satellites",
-                    "10Hz update rate (hardware limit), HDOP ~2.0-2.5",
-                    "Best for: Fast flying, racing, acrobatics, quick response"
-                ]
-            },
-            m10: {
-                name: "u-blox M10",
-                galileo: true,
-                glonass: false,
-                beidou: true,
-                rate: 8,
-                description: [
-                    "3 GNSS constellations (GPS+Galileo+Beidou)",
-                    "8Hz update rate (safe for M10 default CPU clock)",
-                    "Best for: General use, balanced performance"
-                ]
-            },
-            'm10-highperf': {
-                name: "u-blox M10 (High-Performance)",
-                galileo: true,
-                glonass: true,
-                beidou: true,
-                rate: 10,
-                description: [
-                    "4 GNSS constellations for maximum satellites",
-                    "10Hz update rate (requires high-performance CPU clock)",
-                    "Only use if you KNOW your M10 has high-performance clock enabled"
-                ]
-            },
-            manual: {
-                name: "Manual Settings",
-                description: [
-                    "Full control over constellation selection and update rate",
-                    "For advanced users and special requirements"
-                ]
-            }
-        };
-
-        function detectGPSPreset(hwVersion) {
-            switch(hwVersion) {
-                case 0x48: return 'm8';
-                case 0x49: return 'm9-precision';
-                case 0x4A: return 'm10';
-                default:   return 'manual';
-            }
-        }
-
-        function applyGPSPreset(presetId) {
-            // Handle special cases first (before checking GPS_PRESETS)
-            if (presetId === 'manual') {
-                // Enable all controls
-                $('.preset-controlled').prop('disabled', false);
-                $('#gps_ublox_nav_hz').prop('disabled', false);
-                $('#preset_info').hide();
-                return;
-            }
-
-            if (presetId === 'auto') {
-                // Try to auto-detect from FC
-                if (FC.GPS_DATA && FC.GPS_DATA.hwVersion) {
-                    const detectedPreset = detectGPSPreset(FC.GPS_DATA.hwVersion);
-                    applyGPSPreset(detectedPreset);
-                    $('#gps_preset_mode').val(detectedPreset);
-                    GUI.log(i18n.getMessage('gpsAutoDetectSuccess') + ' ' + GPS_PRESETS[detectedPreset].name);
-                } else {
-                    // Fall back to manual if can't detect
-                    applyGPSPreset('manual');
-                    $('#gps_preset_mode').val('manual');
-                    GUI.log(i18n.getMessage('gpsAutoDetectFailed'));
-                }
-                return;
-            }
-
-            // Normal preset application
-            const preset = GPS_PRESETS[presetId];
-            if (!preset) return;
-
-            // Apply preset values (user can still adjust after applying)
-            $('#gps_use_galileo').prop('checked', preset.galileo);
-            $('#gps_use_glonass').prop('checked', preset.glonass);
-            $('#gps_use_beidou').prop('checked', preset.beidou);
-            $('#gps_ublox_nav_hz').val(preset.rate);
-
-            // Show preset info
-            $('#preset_name').text(preset.name);
-            $('#preset_details').html(preset.description.map(d => `<li>${d}</li>`).join(''));
-            $('#preset_info').show();
-        }
-
-        // Set up preset mode handler (namespaced to prevent memory leaks)
-        $('#gps_preset_mode').on('change.gpsTab', function() {
-            applyGPSPreset($(this).val());
-        });
-
-        // Hardware detection status indicator
-        function updateHardwareStatus() {
-            if (FC.GPS_DATA && FC.GPS_DATA.hwVersion && FC.GPS_DATA.hwVersion > 0) {
-                const detectedPreset = detectGPSPreset(FC.GPS_DATA.hwVersion);
-                if (detectedPreset && detectedPreset !== 'manual' && GPS_PRESETS[detectedPreset]) {
-                    $('#gps_hardware_name').text(GPS_PRESETS[detectedPreset].name + ' detected');
-                    $('#gps_hardware_status').show();
-                }
-            }
-        }
-
-        // Handler for "Use optimal settings" link (namespaced)
-        $('#gps_apply_optimal').on('click.gpsTab', function(e) {
-            e.preventDefault();
-            if (FC.GPS_DATA && FC.GPS_DATA.hwVersion) {
-                const detectedPreset = detectGPSPreset(FC.GPS_DATA.hwVersion);
-                if (detectedPreset && detectedPreset !== 'manual') {
-                    $('#gps_preset_mode').val(detectedPreset).trigger('change');
-                    GUI.log('Applied recommended settings for ' + GPS_PRESETS[detectedPreset].name);
-                }
-            }
-        });
-
-        // Initialize - default to manual mode to preserve user's existing settings
-        // User can explicitly select a preset or use "Auto-detect" if desired
-        applyGPSPreset('manual');
-
-        // Check for hardware detection after a short delay to allow GPS data to arrive
-        setTimeout(updateHardwareStatus, 500);
-
-        let mapView = new View({
-            center: [0, 0],
+        let mapView = new ol.View({
+            center: ol.proj.fromLonLat([0, 0]),
             zoom: 15
         });
 
-        let mapLayers = [];
+        let mapLayer;
 
-        if (globalSettings.mapProviderType == 'esri') {
-            mapLayers.push(new TileLayer({
-                    source: new XYZ({
-                        url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-                        attributions: 'Source: <a href="https://www.esri.com/" target="_blank">Esri</a>, Maxar, Earthstar Geographics, and the GIS User Community',
-                        maxZoom: 19
-                    })
-            }));
-            mapLayers.push(new TileLayer({
-                    source: new XYZ({
-                        url: 'https://services.arcgisonline.com/arcgis/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
-                        maxZoom: 19
-                    })
-            }));
-            mapLayers.push(new TileLayer({
-                    source: new XYZ({
-                        url: 'https://services.arcgisonline.com/arcgis/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-                        maxZoom: 19
-                    })
-            }));
-        } else if (globalSettings.mapProviderType == 'mapproxy' ) {
-            mapLayers.push(new TileLayer({
-                source: new TileWMS({
-                            url: globalSettings.proxyURL,
-                            params: {'LAYERS':globalSettings.proxyLayer}
-                        })
-            }));
+        if (globalSettings.mapProviderType == 'bing') {
+            mapLayer = new ol.source.BingMaps({
+                key: globalSettings.mapApiKey,
+                imagerySet: 'AerialWithLabels',
+                maxZoom: 19
+            });
+        } else if (globalSettings.mapProviderType == 'mapproxy') {
+            mapLayer = new ol.source.TileWMS({
+                url: globalSettings.proxyURL,
+                params: { 'LAYERS': globalSettings.proxyLayer }
+            })
         } else {
-            mapLayers.push(new TileLayer({
-                source: new OSM()
-            }));
+            mapLayer = new ol.source.OSM();
         }
 
-        $("#center_button").on('click.gpsTab', function () {
+        $("#center_button").on('click', function () {
             let lat = FC.GPS_DATA.lat / 10000000;
             let lon = FC.GPS_DATA.lon / 10000000;
-            let center = fromLonLat([lon, lat]);
+            let center = ol.proj.fromLonLat([lon, lat]);
             mapView.setCenter(center);
         });
 
-        mapHandler = new Map({
-            target: 'gps-map',
-            layers: mapLayers,
+        mapHandler = new ol.Map({
+            target: document.getElementById('gps-map'),
+            layers: [
+                new ol.layer.Tile({
+                    source: mapLayer
+                })
+            ],
             view: mapView
         });
 
-        gpsTab.toolboxAdsbVehicle = new jBox('Mouse', {
+        TABS.gps.toolboxAdsbVehicle = new jBox('Mouse', {
             position: {
                 x: "right",
                 y: "bottom"
@@ -433,7 +232,7 @@ gpsTab.initialize = function (callback) {
             });
 
             if (feature && feature.get('data') && feature.get('name')) {
-                gpsTab.toolboxAdsbVehicle.setContent(
+                TABS.gps.toolboxAdsbVehicle.setContent(
                     `callsign: <strong>` + feature.get('name') + `</strong><br />`
                     + `lat: <strong>`+ (feature.get('data').lat / 10000000) + `</strong><br />`
                     + `lon: <strong>`+ (feature.get('data').lon / 10000000) + `</strong><br />`
@@ -442,11 +241,11 @@ gpsTab.initialize = function (callback) {
                     + `type: <strong>`+ ADSB_VEHICLE_TYPE[feature.get('data').emitterType].name + `</strong>`
                 ).open();
             }else{
-                gpsTab.toolboxAdsbVehicle.close();
+                TABS.gps.toolboxAdsbVehicle.close();
             }
         });
 
-        let center = fromLonLat([0, 0]);
+        let center = ol.proj.fromLonLat([0, 0]);
         mapView.setCenter(center);
         mapView.setZoom(2);
 
@@ -501,32 +300,32 @@ gpsTab.initialize = function (callback) {
             //Update map
             if (FC.GPS_DATA.fix >= 2) {
 
-                let center = fromLonLat([lon, lat]);
+                let center = ol.proj.fromLonLat([lon, lat]);
 
                 if (!cursorInitialized) {
                     cursorInitialized = true;
 
-                    iconStyle = new Style({
-                        image: new Icon(({
+                    iconStyle = new ol.style.Style({
+                        image: new ol.style.Icon(({
                             anchor: [0.5, 1],
                             opacity: 1,
                             scale: 0.5,
-                            src: arrowIcon
+                            src: path.join(__dirname, './../images/icons/cf_icon_position.png')
                         }))
                     });
 
                     let currentPositionLayer;
-                    iconGeometry = new Point(fromLonLat([0, 0]));
-                    iconFeature = new Feature({
+                    iconGeometry = new ol.geom.Point(ol.proj.fromLonLat([0, 0]));
+                    iconFeature = new ol.Feature({
                         geometry: iconGeometry
                     });
 
                     iconFeature.setStyle(iconStyle);
 
-                    let vectorSource = new VectorSource({
+                    let vectorSource = new ol.source.Vector({
                         features: [iconFeature]
                     });
-                    currentPositionLayer = new VectorLayer ({
+                    currentPositionLayer = new ol.layer.Vector({
                         source: vectorSource
                     });
 
@@ -556,9 +355,9 @@ gpsTab.initialize = function (callback) {
                 if (!vehiclesCursorInitialized) {
                     vehiclesCursorInitialized = true;
 
-                    vehicleVectorSource = new VectorSource({});
+                    vehicleVectorSource = new ol.source.Vector({});
 
-                    let vehicleLayer = new VectorLayer({
+                    let vehicleLayer = new ol.layer.Vector({
                         source: vehicleVectorSource
                     });
 
@@ -566,28 +365,28 @@ gpsTab.initialize = function (callback) {
                 }
 
                 if (vehicle.lat != 0 && vehicle.lon != 0 && vehicle.ttl > 0) {
-                    let vehicleIconStyle = new Style({
-                        image: new Icon(({
+                    let vehicleIconStyle = new ol.style.Style({
+                        image: new ol.style.Icon(({
                             opacity: 1,
                             rotation: vehicle.headingDegrees * (Math.PI / 180),
                             scale: 0.8,
                             anchor: [0.5, 0.5],
-                            src: ADSB_VEHICLE_TYPE[vehicle.emitterType].icon,
+                            src: path.join(__dirname, './../resources/adsb/' + ADSB_VEHICLE_TYPE[vehicle.emitterType].icon),
                         })),
-                        text: new Text(({
+                        text: new ol.style.Text(({
                             text: vehicle.callsign,
                             textAlign: 'center',
                             textBaseline: "bottom",
                             offsetY: +40,
                             padding: [2, 2, 2, 2],
-                            backgroundFill: new Fill({ color: '#444444' }),
-                            fill: new Fill({color: '#ffffff'}),
+                            backgroundFill: '#444444',
+                            fill: new ol.style.Fill({color: '#ffffff'}),
                         })),
                     });
 
 
-                    let iconGeometry = new Point(fromLonLat([vehicle.lon / 10000000, vehicle.lat / 10000000]));
-                    let iconFeature = new Feature({
+                    let iconGeometry = new ol.geom.Point(ol.proj.fromLonLat([vehicle.lon / 10000000, vehicle.lat / 10000000]));
+                    let iconFeature = new ol.Feature({
                         geometry: iconGeometry,
                         name: vehicle.callsign,
                         type: 'adsb',
@@ -629,7 +428,7 @@ gpsTab.initialize = function (callback) {
             });
         }
 
-        $('a.save').on('click.gpsTab', function () {
+        $('a.save').on('click', function () {
             serialPortHelper.set($port.val(), 'GPS', $baud.val());
             features.reset();
             features.fromUI($('.tab-gps'));
@@ -680,19 +479,19 @@ gpsTab.initialize = function (callback) {
             }
         }
 
-        $('a.loadAssistnowOnline').on('click.gpsTab', function () {
+        $('a.loadAssistnowOnline').on('click', function () {
             if(globalSettings.assistnowApiKey != null && globalSettings.assistnowApiKey != '') {
                 ublox.loadAssistnowOnline(processUbloxData);
            } else {
-                dialog.alert("Assistnow Token not set!");
+                GUI.alert("Assistnow Token not set!");
             }
         });
 
-        $('a.loadAssistnowOffline').on('click.gpsTab', function () {
+        $('a.loadAssistnowOffline').on('click', function () {
             if(globalSettings.assistnowApiKey != null && globalSettings.assistnowApiKey != '') {
                 ublox.loadAssistnowOffline(processUbloxData);
             } else {
-                dialog.alert("Assistnow Token not set!");
+                GUI.alert("Assistnow Token not set!");
             }
         });
 
@@ -701,19 +500,9 @@ gpsTab.initialize = function (callback) {
 
 };
 
-gpsTab.cleanup = function (callback) {
-    // Remove all namespaced event handlers to prevent memory leaks
-    $('#gps_preset_mode').off('.gpsTab');
-    $('#gps_apply_optimal').off('.gpsTab');
-    $('#center_button').off('.gpsTab');
-    $('a.save').off('.gpsTab');
-    $('a.loadAssistnowOnline').off('.gpsTab');
-    $('a.loadAssistnowOffline').off('.gpsTab');
-
+TABS.gps.cleanup = function (callback) {
     if (callback) callback();
-    if (gpsTab.toolboxAdsbVehicle){
-        gpsTab.toolboxAdsbVehicle.close();
+    if (TABS.gps.toolboxAdsbVehicle){
+        TABS.gps.toolboxAdsbVehicle.close();
     }
 };
-
-export default gpsTab;

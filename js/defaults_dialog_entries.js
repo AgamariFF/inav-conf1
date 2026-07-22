@@ -391,10 +391,6 @@ var defaultsDialogData = [
                 value: 3
             },
             {
-                key: "looptime",
-                value: 1000
-            },
-            {
                 key: "gyro_hardware_lpf",
                 value: "256HZ"
             },
@@ -457,6 +453,18 @@ var defaultsDialogData = [
             {
                 key: "yaw_rate",
                 value: 3
+            },
+            {
+                key: "nav_fw_pos_z_p",
+                value: 25
+            },
+            {
+                key: "nav_fw_pos_z_i",
+                value: 5
+            },
+            {
+                key: "nav_fw_pos_z_d",
+                value: 8
             },
             {
                 key: "nav_fw_pos_xy_p",
@@ -523,26 +531,6 @@ var defaultsDialogData = [
                 value: 255
             },
             {
-                key: "nav_fw_pos_z_p",
-                value: 22
-            },
-            {
-                key: "nav_fw_pos_z_i",
-                value: 6
-            },
-            {
-                key: "nav_fw_pos_z_d",
-                value: 2
-            },
-            {
-                key: "nav_fw_pos_z_FF",
-                value: 25
-            },
-            {
-                key: "nav_fw_alt_control_response",
-                value: 45
-            },
-            {
                 key: "airmode_type",
                 value: "STICK_CENTER_ONCE"
             },
@@ -582,12 +570,9 @@ var defaultsDialogData = [
                 key: "nav_fw_launch_max_altitude",
                 value: 5000
             },
-            /*
-             * TPA
-             */
             {
-                key: "tpa_rate",
-                value: 80
+                key: "nav_fw_launch_climb_angle",
+                value: 25
             },
         ],
     },
@@ -610,10 +595,6 @@ var defaultsDialogData = [
             {
                 key: "applied_defaults",
                 value: 4
-            },
-            {
-                key: "looptime",
-                value: 1000
             },
             {
                 key: "gyro_hardware_lpf",
@@ -680,8 +661,20 @@ var defaultsDialogData = [
                 value: 3
             },
             {
+                key: "nav_fw_pos_z_p",
+                value: 35
+            },
+            {
+                key: "nav_fw_pos_z_i",
+                value: 5
+            },
+            {
+                key: "nav_fw_pos_z_d",
+                value: 10
+            },
+            {
                 key: "nav_fw_pos_xy_p",
-                value: 75
+                value: 70
             },
             {
                 key: "fw_turn_assist_pitch_gain",
@@ -744,26 +737,6 @@ var defaultsDialogData = [
                 value: 100
             },
             {
-                key: "nav_fw_pos_z_p",
-                value: 25
-            },
-            {
-                key: "nav_fw_pos_z_i",
-                value: 6
-            },
-            {
-                key: "nav_fw_pos_z_d",
-                value: 5
-            },
-            {
-                key: "nav_fw_pos_z_FF",
-                value: 25
-            },
-            {
-                key: "nav_fw_alt_control_response",
-                value: 45
-            },
-            {
                 key: "airmode_type",
                 value: "STICK_CENTER_ONCE"
             },
@@ -803,12 +776,9 @@ var defaultsDialogData = [
                 key: "nav_fw_launch_max_altitude",
                 value: 5000
             },
-            /*
-             * TPA
-             */
             {
-                key: "tpa_rate",
-                value: 80
+                key: "nav_fw_launch_climb_angle",
+                value: 25
             },
         ],
     },
@@ -823,10 +793,6 @@ var defaultsDialogData = [
             {
                 key: "model_preview_type",
                 value: 31
-            },
-            {
-                key: "looptime",
-                value: 1000
             },
             {
                 key: "gyro_hardware_lpf",
@@ -896,4 +862,4 @@ var defaultsDialogData = [
     }
 ];
 
-export default defaultsDialogData;
+module.exports = defaultsDialogData;
