@@ -1,55 +1,53 @@
 'use strict';
 
-const inflection = require( 'inflection' );
-const fs = require('fs');
 const path = require('path');
-const semver = require('semver');
-const mapSeries = require('promise-map-series');
-const { dialog } = require("@electron/remote");
 const Store = require('electron-store');
-const store = new Store();
-const tabs = require('./../js/tabs')
+const store = new Store()
 
-const FC = require('./../js/fc');
-const { GUI, TABS } = require('./../js/gui');
-const MSP = require('./../js/msp');
-const MSPCodes = require('./../js/msp/MSPCodes');
+const MSPChainerClass = require('./../js/msp/MSPchainer');
 const mspHelper = require('./../js/msp/MSPHelper');
+const MSPCodes = require('./../js/msp/MSPCodes');
+const MSP = require('./../js/msp');
+const { GUI, TABS } = require('./../js/gui');
+const tabs = require('./../js/tabs');
+const FC = require('./../js/fc');
 const Settings = require('./../js/settings');
-const { globalSettings } = require('./../js/globalSettings');
-const { PortHandler } = require('./../js/port_handler');
 const i18n = require('./../js/localization');
-const jBox = require('./../js/libraries/jBox/jBox.min');
-const { Console } = require('console');
+const { scaleRangeInt } = require('./../js/helpers');
+const interval = require('./../js/intervals');
 
-TABS.telemetry = {};
-
-TABS.telemetry.initialize = function(callback) {
-    const self = this;
-    GUI.load("tabs/telemetry.html", function () {
-        function loadSubTab(name) {
-            switch (name) {
-                case "osd":
-                    GUI.load("tabs/osd.html", function () {
-                        TABS.osd.initialize(callback);
-                    });
-                    break;
-                case "receiver":
-                    GUI.load("tabs/receiver.html", function () {
-                        TABS.receiver.initialize(callback);
-                    });
-                    break;
-                case "sensors":
-                    GUI.load("tabs/sensors.html", function () {
-                        TABS.sensors.initialize(callback);
-                    });
-                    break;
-            }
-        }
-    })
-    return TABS.osd.initialize(callback);
+TABS.telemetry = {
+    rateChartHeight: 117
 };
 
-TABS.telemetry.cleanup = function(callback) {
-    return TABS.telemetry.cleanup(callback);
+TABS.telemetry.initialize = function (callback) {
+
+    var loadChainer = new MSPChainerClass();
+
+    var loadChain = [
+        mspHelper.loadPidData,
+        mspHelper.loadRateDynamics,
+        mspHelper.loadRateProfileData,
+        mspHelper.loadEzTune,
+        mspHelper.loadMixerConfig,
+    ];
+
+    loadChainer.setChain(loadChain);
+    loadChainer.setExitPoint(load_html);
+    loadChainer.execute();
+
+    if (GUI.active_tab != 'telemetry') {
+        GUI.active_tab = 'telemetry';
+    }
+
+    function load_html() {
+        GUI.load(path.join(__dirname, "telemetry.html"), Settings.processHtml(process_html));
+    }
+
+};
+
+TABS.telemetry.cleanup = function (callback) {
+    if (callback) {
+        callback();
+    }
 };
