@@ -3479,7 +3479,7 @@ TABS.osd.initialize = function (callback) {
     }
 
     HARDWARE.update(function () {
-        GUI.load(path.join(__dirname, "osd.html"), Settings.processHtml(function () {
+        GUI.load(path.join(__dirname, "telemetry.html"), Settings.processHtml(function () {
             // translate to user-selected language
            i18n.localize();
 
@@ -3652,7 +3652,7 @@ TABS.osd.initialize = function (callback) {
                 mspHelper.loadOsdCustomElements(createCustomElements);
             }
 
-            tabs.init($('.tab-telemeetry'));
+            tabs.init($('.tab-telemetry'));
 
             GUI.content_ready(callback);
         }));
