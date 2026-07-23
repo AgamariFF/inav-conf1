@@ -124,6 +124,9 @@
     "tabPorts": {
         "message": "Ports"
     },
+    "tabTelemetry": {
+        "message": "Telemetry"
+    },
     "tabPidTuning": {
         "message": "Tuning"
     },
@@ -6181,5 +6184,8 @@
     },
    "search": {
         "message": "Search"
+    },
+    "tabSensors": {
+        "message": "Sensors"
     }
 }
