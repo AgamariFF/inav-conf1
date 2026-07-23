@@ -41,7 +41,12 @@ TABS.telemetry.initialize = function (callback) {
     }
 
     function load_html() {
-        GUI.load(path.join(__dirname, "telemetry.html"));
+        GUI.load(path.join(__dirname, "telemetry.html"), Settings.processHtml(process_html));
+    }
+
+     function process_html() {
+        tabs.init($('.tab-telemetry'));
+        GUI.content_ready(callback);
     }
 
 };
