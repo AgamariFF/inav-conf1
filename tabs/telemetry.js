@@ -8,6 +8,7 @@ const mapSeries = require('promise-map-series');
 const { dialog } = require("@electron/remote");
 const Store = require('electron-store');
 const store = new Store();
+const tabs = require('./../js/tabs')
 
 const FC = require('./../js/fc');
 const { GUI, TABS } = require('./../js/gui');
@@ -3650,6 +3651,8 @@ TABS.osd.initialize = function (callback) {
             if(semver.gte(FC.CONFIG.flightControllerVersion, '7.1.0')) {
                 mspHelper.loadOsdCustomElements(createCustomElements);
             }
+
+            tabs.init($('.tab-telemeetry'));
 
             GUI.content_ready(callback);
         }));
