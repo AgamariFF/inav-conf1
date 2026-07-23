@@ -26,7 +26,7 @@ TABS.telemetry = {};
 
 TABS.telemetry.initialize = function(callback) {
     const self = this;
-    GUI.load("tabs/telemtry.html", function () {
+    GUI.load("tabs/telemetry.html", function () {
         function loadSubTab(name) {
             switch (name) {
                 case "osd":
@@ -36,12 +36,12 @@ TABS.telemetry.initialize = function(callback) {
                     break;
                 case "receiver":
                     GUI.load("tabs/receiver.html", function () {
-                        TABS.osd.initialize(callback);
+                        TABS.receiver.initialize(callback);
                     });
                     break;
                 case "sensors":
                     GUI.load("tabs/sensors.html", function () {
-                        TABS.osd.initialize(callback);
+                        TABS.sensors.initialize(callback);
                     });
                     break;
             }
@@ -51,5 +51,5 @@ TABS.telemetry.initialize = function(callback) {
 };
 
 TABS.telemetry.cleanup = function(callback) {
-    return TABS.osd.cleanup(callback);
+    return TABS.telemetry.cleanup(callback);
 };
