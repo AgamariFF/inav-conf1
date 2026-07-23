@@ -44,8 +44,10 @@ TABS.telemetry.initialize = function (callback) {
         GUI.load(path.join(__dirname, "telemetry.html"), Settings.processHtml(process_html));
     }
 
-     function process_html() {
+    function process_html() {
         tabs.init($('.tab-telemetry'));
+        OSD.initData();
+        OSD.GUI.uodate();
         GUI.content_ready(callback);
     }
 
