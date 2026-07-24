@@ -931,6 +931,10 @@ li.active .ic_calibration {
     background-image: url("./../../images/icons/cf_icon_failsafe_grey.svg");
 }
 
+.ic_telemetry {
+    background-image: url("./../../images/icons/cf_icon_telemetry_grey.svg");
+}
+
 .ic_failsafe:hover {
     background-image: url("./../../images/icons/cf_icon_failsafe_white.svg");
 }

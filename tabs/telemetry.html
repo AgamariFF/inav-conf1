@@ -4,9 +4,8 @@
         <span class="subtab__header_label" for="subtab-sensors" data-i18n="tabSensors"></span>
         <span class="subtab__header_label" for="subtab-receiver" data-i18n="tabReceiver"></span>
     </div>
-    <div id="subtab-osd" class="subtab__content subtab__content--current">
+    <div id="subtab-osd" class="tab-osd subtab__content subtab__content--current">
         <div class="content_wrapper">
-            <h1 class="tab_title" data-i18n="tabOSD"></h1>
             <div class="unsupported hide">
                 <p data-i18n="osd_unsupported_msg1" class="note"></p>
                 <p data-i18n="osd_unsupported_msg2" class="note"></p>
@@ -497,5 +496,667 @@
                 <a class="fonts" id="fontmanager" href="#" data-i18n="osd_font_manager"></a>
             </div>
         </div>
+    </div>
+    <div id="subtab-sensors" class="tab-sensors subtab__content">
+        <div class="content_wrapper">
+            <div class="tab_title" i18n="tabRawSensorData">tabRawSensorData</div>
+            <div class="note" style="margin-bottom: 10px;">
+                <div class="note_spacer">
+                    <p i18n="sensorsInfo">Keep in mind that using fast update periods and rendering multiple graphs at
+                        the same time is resource heavy and will burn your battery quicker if you use a laptop. We recommend
+                        to only render graphs for sensors you are interested in while using reasonable update periods.</p>
+                </div>
+            </div>
+            <div class="gui_box">
+                <div class="info">
+                    <div class="checkboxes">
+                        <label><input type="checkbox" name="gyro_on" class="first" /><span i18n="sensorsGyroSelect"></label> <label><input
+                            type="checkbox" name="accel_on" /><span i18n="sensorsAccelSelect"></span></label> <label><input type="checkbox"
+                            name="mag_on" /><span i18n="sensorsMagSelect"></span></label> <label><input type="checkbox" name="baro_on" /><span i18n="sensorsAltitudeSelect"></span></label> <label><input
+                            type="checkbox" name="sonar_on" /><span i18n="sensorsSonarSelect"></span></label> <label><input type="checkbox" name="airspeed_on" /><span i18n="sensorsAirSpeedSelect"></span></label> <label><input
+                            type="checkbox" name="temperature_on" /><span i18n="sensorsTemperaturesSelect"></span></label><label><input type="checkbox" name="debug_on" /><span i18n="sensorsDebugSelect"></span></label>
+
+                        <a class="debug-trace" href="javascript:void(0);"><span i18n="sensorsDebugTrace"></span></a>
+                    </div>
+                </div>
+            </div>
+            <div class="wrapper gyro">
+                <div class="gui_box grey">
+                    <div class="plot_control">
+                        <div class="title" i18n="sensorsGyroscope"></div>
+                        <dl>
+                            <dt i18n="sensorsRefresh"></dt>
+                            <dd class="rate">
+                                <select name="gyro_refresh_rate">
+                                    <option value="10">10 ms</option>
+                                    <option value="20">20 ms</option>
+                                    <option value="30">30 ms</option>
+                                    <option value="40">40 ms</option>
+                                    <option value="50" selected="selected">50 ms</option>
+                                    <option value="100">100 ms</option>
+                                    <option value="250">250 ms</option>
+                                    <option value="500">500 ms</option>
+                                    <option value="1000">1000 ms</option>
+                                </select>
+                            </dd>
+                            <dt i18n="sensorsScale"></dt>
+                            <dd class="scale">
+                                <select name="gyro_scale">
+                                    <option value="100">100</option>
+                                    <option value="500">500</option>
+                                    <option value="1000">1000</option>
+                                    <option value="2000" selected="selected">2000</option>
+                                </select>
+                            </dd>
+                            <dt>X:</dt>
+                            <dd class="x">0</dd>
+                            <dt>Y:</dt>
+                            <dd class="y">0</dd>
+                            <dt>Z:</dt>
+                            <dd class="z">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="gyro">
+                <g class="grid x" transform="translate(40, 120)"></g>
+                <g class="grid y" transform="translate(40, 10)"></g>
+                <g class="data" transform="translate(41, 10)"></g>
+                <g class="axis x" transform="translate(40, 120)"></g>
+                <g class="axis y" transform="translate(40, 10)"></g>
+            </svg>
+            <div class="clear-both"></div>
+        </div>
+            </div>
+            <div class="wrapper accel">
+                <div class="gui_box grey">
+                    <div class="plot_control">
+                        <div class="title" i18n="sensorsAccelerometer"></div>
+                        <dl>
+                            <dt i18n="sensorsRefresh"></dt>
+                            <dd class="rate">
+                                <select name="accel_refresh_rate">
+                                    <option value="10">10 ms</option>
+                                    <option value="20">20 ms</option>
+                                    <option value="30">30 ms</option>
+                                    <option value="40">40 ms</option>
+                                    <option value="50" selected="selected">50 ms</option>
+                                    <option value="100">100 ms</option>
+                                    <option value="250">250 ms</option>
+                                    <option value="500">500 ms</option>
+                                    <option value="1000">1000 ms</option>
+                                </select>
+                            </dd>
+                            <dt i18n="sensorsScale"></dt>
+                            <dd class="scale">
+                                <select name="accel_scale">
+                                    <option value="0.5">0.5</option>
+                                    <option value="1">1</option>
+                                    <option value="2" selected="selected">2</option>
+                                </select>
+                            </dd>
+                            <dt>X:</dt>
+                            <dd class="x">0</dd>
+                            <dt>Y:</dt>
+                            <dd class="y">0</dd>
+                            <dt>Z:</dt>
+                            <dd class="z">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="accel">
+                <g class="grid x" transform="translate(40, 120)"></g>
+                <g class="grid y" transform="translate(40, 10)"></g>
+                <g class="data" transform="translate(41, 10)"></g>
+                <g class="axis x" transform="translate(40, 120)"></g>
+                <g class="axis y" transform="translate(40, 10)"></g>
+            </svg>
+                    <div class="clear-both"></div>
+                </div>
+            </div>
+
+            <div class="wrapper mag">
+                <div class="gui_box grey">
+                    <div class="plot_control">
+                        <div class="title" i18n="sensorsMagnetometer"></div>
+                        <dl>
+                            <dt i18n="sensorsRefresh"></dt>
+                            <dd class="rate">
+                                <select name="mag_refrash_rate">
+                                    <option value="10">10 ms</option>
+                                    <option value="20">20 ms</option>
+                                    <option value="30">30 ms</option>
+                                    <option value="40">40 ms</option>
+                                    <option value="50" selected="selected">50 ms</option>
+                                    <option value="100">100 ms</option>
+                                    <option value="250">250 ms</option>
+                                    <option value="500">500 ms</option>
+                                    <option value="1000">1000 ms</option>
+                                </select>
+                            </dd>
+                            <dt i18n="sensorsScale"></dt>
+                            <dd class="scale">
+                                <select name="mag_scale">
+                                    <option value="0.5">0.5</option>
+                                    <option value="1" selected="selected">1</option>
+                                </select>
+                            </dd>
+                            <dt>X:</dt>
+                            <dd class="x">0</dd>
+                            <dt>Y:</dt>
+                            <dd class="y">0</dd>
+                            <dt>Z:</dt>
+                            <dd class="z">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="mag">
+                <g class="grid x" transform="translate(40, 120)"></g>
+                <g class="grid y" transform="translate(40, 10)"></g>
+                <g class="data" transform="translate(41, 10)"></g>
+                <g class="axis x" transform="translate(40, 120)"></g>
+                <g class="axis y" transform="translate(40, 10)"></g>
+            </svg>
+                    <div class="clear-both"></div>
+                </div>
+            </div>
+            <div class="wrapper altitude">
+                <div class="gui_box grey">
+                    <div class="plot_control">
+                        <div class="title" i18n="sensorsBarometer"></div>
+                        <dl>
+                            <dt i18n="sensorsRefresh"></dt>
+                            <dd class="rate">
+                                <select name="baro_refresh_rate">
+                                    <option value="10">10 ms</option>
+                                    <option value="20">20 ms</option>
+                                    <option value="30">30 ms</option>
+                                    <option value="40">40 ms</option>
+                                    <option value="50">50 ms</option>
+                                    <option value="100" selected="selected">100 ms</option>
+                                    <option value="250">250 ms</option>
+                                    <option value="500">500 ms</option>
+                                    <option value="1000">1000 ms</option>
+                                </select>
+                            </dd>
+                            <dt>Alt:</dt>
+                            <dd class="x">0</dd>
+                            <dt>Baro:</dt>
+                            <dd class="y">0</dd>
+                        </dl>
+                    </div>
+
+                    <svg id="altitude">
+                <g class="grid x" transform="translate(40, 120)"></g>
+                <g class="grid y" transform="translate(40, 10)"></g>
+                <g class="data" transform="translate(41, 10)"></g>
+                <g class="axis x" transform="translate(40, 120)"></g>
+                <g class="axis y" transform="translate(40, 10)"></g>
+            </svg>
+                    <div class="clear-both"></div>
+                </div>
+            </div>
+            <div class="wrapper sonar">
+                <div class="gui_box grey">
+                    <div class="plot_control">
+                        <div class="title" i18n="sensorsSonar"></div>
+                        <dl>
+                            <dt i18n="sensorsRefresh"></dt>
+                            <dd class="rate">
+                                <select name="sonar_refresh_rate">
+                                    <option value="10">10 ms</option>
+                                    <option value="20">20 ms</option>
+                                    <option value="30">30 ms</option>
+                                    <option value="40">40 ms</option>
+                                    <option value="50">50 ms</option>
+                                    <option value="100" selected="selected">100 ms</option>
+                                    <option value="250">250 ms</option>
+                                    <option value="500">500 ms</option>
+                                    <option value="1000">1000 ms</option>
+                                </select>
+                            </dd>
+                            <dt>X:</dt>
+                            <dd class="x">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="sonar">
+                <g class="grid x" transform="translate(40, 120)"></g>
+                <g class="grid y" transform="translate(40, 10)"></g>
+                <g class="data" transform="translate(41, 10)"></g>
+                <g class="axis x" transform="translate(40, 120)"></g>
+                <g class="axis y" transform="translate(40, 10)"></g>
+            </svg>
+                    <div class="clear-both"></div>
+                </div>
+            </div>
+            <div class="wrapper airspeed">
+                <div class="gui_box grey">
+                    <div class="plot_control">
+                        <div class="title" i18n="sensorsAirspeed"></div>
+                        <dl>
+                            <dt i18n="sensorsRefresh"></dt>
+                            <dd class="rate">
+                                <select name="airspeed_refresh_rate">
+                                    <option value="10">10 ms</option>
+                                    <option value="20">20 ms</option>
+                                    <option value="30">30 ms</option>
+                                    <option value="40">40 ms</option>
+                                    <option value="50" selected="selected">50 ms</option>
+                                    <option value="100">100 ms</option>
+                                    <option value="250">250 ms</option>
+                                    <option value="500">500 ms</option>
+                                    <option value="1000">1000 ms</option>
+                                </select>
+                            </dd>
+                            <dt>IAS:</dt>
+                            <dd class="x">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="airspeed">
+                        <g class="grid x" transform="translate(40, 120)"></g>
+                        <g class="grid y" transform="translate(40, 10)"></g>
+                        <g class="data" transform="translate(41, 10)"></g>
+                        <g class="axis x" transform="translate(40, 120)"></g>
+                        <g class="axis y" transform="translate(40, 10)"></g>
+                    </svg>
+                    <div class="clear-both"></div>
+                </div>
+            </div>
+
+            <div class="wrapper temperature">
+                <div class="gui_box grey">
+                    <div class="plot_control">
+                        <div class="title" i18n="sensorsTemperature0"></div>
+                        <dl>
+                            <dt i18n="sensorsTemperatureValue"></dt>
+                            <dd class="x">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="temperature1">
+                        <g class="grid x" transform="translate(40, 120)"></g>
+                        <g class="grid y" transform="translate(40, 10)"></g>
+                        <g class="data" transform="translate(41, 10)"></g>
+                        <g class="axis x" transform="translate(40, 120)"></g>
+                        <g class="axis y" transform="translate(40, 10)"></g>
+                    </svg>
+                    <div class="clear-both"></div>
+                    <div class="plot_control">
+                        <div class="title" i18n="sensorsTemperature1"></div>
+                        <dl>
+                            <dt i18n="sensorsTemperatureValue"></dt>
+                            <dd class="x">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="temperature2">
+                        <g class="grid x" transform="translate(40, 120)"></g>
+                        <g class="grid y" transform="translate(40, 10)"></g>
+                        <g class="data" transform="translate(41, 10)"></g>
+                        <g class="axis x" transform="translate(40, 120)"></g>
+                        <g class="axis y" transform="translate(40, 10)"></g>
+                    </svg>
+                    <div class="clear-both"></div>
+                    <div class="plot_control">
+                        <div class="title" i18n="sensorsTemperature2"></div>
+                        <dl>
+                            <dt i18n="sensorsTemperatureValue"></dt>
+                            <dd class="x">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="temperature3">
+                        <g class="grid x" transform="translate(40, 120)"></g>
+                        <g class="grid y" transform="translate(40, 10)"></g>
+                        <g class="data" transform="translate(41, 10)"></g>
+                        <g class="axis x" transform="translate(40, 120)"></g>
+                        <g class="axis y" transform="translate(40, 10)"></g>
+                    </svg>
+                    <div class="clear-both"></div>
+                    <div class="plot_control">
+                        <div class="title" i18n="sensorsTemperature3"></div>
+                        <dl>
+                            <dt i18n="sensorsTemperatureValue"></dt>
+                            <dd class="x">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="temperature4">
+                        <g class="grid x" transform="translate(40, 120)"></g>
+                        <g class="grid y" transform="translate(40, 10)"></g>
+                        <g class="data" transform="translate(41, 10)"></g>
+                        <g class="axis x" transform="translate(40, 120)"></g>
+                        <g class="axis y" transform="translate(40, 10)"></g>
+                    </svg>
+                    <div class="clear-both"></div>
+                    <div class="plot_control">
+                        <div class="title" i18n="sensorsTemperature4"></div>
+                        <dl>
+                            <dt i18n="sensorsTemperatureValue"></dt>
+                            <dd class="x">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="temperature5">
+                        <g class="grid x" transform="translate(40, 120)"></g>
+                        <g class="grid y" transform="translate(40, 10)"></g>
+                        <g class="data" transform="translate(41, 10)"></g>
+                        <g class="axis x" transform="translate(40, 120)"></g>
+                        <g class="axis y" transform="translate(40, 10)"></g>
+                    </svg>
+                    <div class="clear-both"></div>
+                    <div class="plot_control">
+                        <div class="title" i18n="sensorsTemperature5"></div>
+                        <dl>
+                            <dt i18n="sensorsTemperatureValue"></dt>
+                            <dd class="x">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="temperature6">
+                        <g class="grid x" transform="translate(40, 120)"></g>
+                        <g class="grid y" transform="translate(40, 10)"></g>
+                        <g class="data" transform="translate(41, 10)"></g>
+                        <g class="axis x" transform="translate(40, 120)"></g>
+                        <g class="axis y" transform="translate(40, 10)"></g>
+                    </svg>
+                    <div class="clear-both"></div>
+                    <div class="plot_control">
+                        <div class="title" i18n="sensorsTemperature6"></div>
+                        <dl>
+                            <dt i18n="sensorsTemperatureValue"></dt>
+                            <dd class="x">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="temperature7">
+                        <g class="grid x" transform="translate(40, 120)"></g>
+                        <g class="grid y" transform="translate(40, 10)"></g>
+                        <g class="data" transform="translate(41, 10)"></g>
+                        <g class="axis x" transform="translate(40, 120)"></g>
+                        <g class="axis y" transform="translate(40, 10)"></g>
+                    </svg>
+                    <div class="clear-both"></div>
+                    <div class="plot_control">
+                        <div class="title" i18n="sensorsTemperature7"></div>
+                        <dl>
+                            <dt i18n="sensorsTemperatureValue"></dt>
+                            <dd class="x">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="temperature8">
+                        <g class="grid x" transform="translate(40, 120)"></g>
+                        <g class="grid y" transform="translate(40, 10)"></g>
+                        <g class="data" transform="translate(41, 10)"></g>
+                        <g class="axis x" transform="translate(40, 120)"></g>
+                        <g class="axis y" transform="translate(40, 10)"></g>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="wrapper debug">
+                <div class="gui_box grey">
+                    <div class="plot_control">
+                        <div class="title">Debug 0</div>
+                        <dl>
+                            <dt i18n="sensorsRefresh"></dt>
+                            <dd class="rate">
+                            <select name="debug_refresh_rate">
+                                <option value="10">10 ms</option>
+                                <option value="20">20 ms</option>
+                                <option value="30">30 ms</option>
+                                <option value="40">40 ms</option>
+                                <option value="50">50 ms</option>
+                                <option value="100">100 ms</option>
+                                <option value="250">250 ms</option>
+                                <option value="500" selected="selected">500 ms</option>
+                                <option value="1000">1000 ms</option>
+                            </select>
+                            </dd>
+                            <dt>X:</dt>
+                            <dd class="x">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="debug1">
+                        <g class="grid x" transform="translate(40, 120)"></g>
+                        <g class="grid y" transform="translate(40, 10)"></g>
+                        <g class="data" transform="translate(41, 10)"></g>
+                        <g class="axis x" transform="translate(40, 120)"></g>
+                        <g class="axis y" transform="translate(40, 10)"></g>
+                    </svg>
+                    <div class="clear-both"></div>
+                    <div class="plot_control">
+                        <div class="title">Debug 1</div>
+                        <dl>
+                            <dt>X:</dt>
+                            <dd class="x">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="debug2">
+                        <g class="grid x" transform="translate(40, 120)"></g>
+                        <g class="grid y" transform="translate(40, 10)"></g>
+                        <g class="data" transform="translate(41, 10)"></g>
+                        <g class="axis x" transform="translate(40, 120)"></g>
+                        <g class="axis y" transform="translate(40, 10)"></g>
+                    </svg>
+                    <div class="clear-both"></div>
+                    <div class="plot_control">
+                        <div class="title">Debug 2</div>
+                        <dl>
+                            <dt>X:</dt>
+                            <dd class="x">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="debug3">
+                        <g class="grid x" transform="translate(40, 120)"></g>
+                        <g class="grid y" transform="translate(40, 10)"></g>
+                        <g class="data" transform="translate(41, 10)"></g>
+                        <g class="axis x" transform="translate(40, 120)"></g>
+                        <g class="axis y" transform="translate(40, 10)"></g>
+                    </svg>
+                    <div class="clear-both"></div>
+                    <div class="plot_control">
+                        <div class="title">Debug 3</div>
+                        <dl>
+                            <dt>X:</dt>
+                            <dd class="x">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="debug4">
+                        <g class="grid x" transform="translate(40, 120)"></g>
+                        <g class="grid y" transform="translate(40, 10)"></g>
+                        <g class="data" transform="translate(41, 10)"></g>
+                        <g class="axis x" transform="translate(40, 120)"></g>
+                        <g class="axis y" transform="translate(40, 10)"></g>
+                    </svg>
+                    <div class="clear-both"></div>
+                    <div class="plot_control">
+                        <div class="title">Debug 4</div>
+                        <dl>
+                            <dt>X:</dt>
+                            <dd class="x">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="debug5">
+                        <g class="grid x" transform="translate(40, 120)"></g>
+                        <g class="grid y" transform="translate(40, 10)"></g>
+                        <g class="data" transform="translate(41, 10)"></g>
+                        <g class="axis x" transform="translate(40, 120)"></g>
+                        <g class="axis y" transform="translate(40, 10)"></g>
+                    </svg>
+                    <div class="clear-both"></div>
+                    <div class="plot_control">
+                        <div class="title">Debug 5</div>
+                        <dl>
+                            <dt>X:</dt>
+                            <dd class="x">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="debug6">
+                        <g class="grid x" transform="translate(40, 120)"></g>
+                        <g class="grid y" transform="translate(40, 10)"></g>
+                        <g class="data" transform="translate(41, 10)"></g>
+                        <g class="axis x" transform="translate(40, 120)"></g>
+                        <g class="axis y" transform="translate(40, 10)"></g>
+                    </svg>
+                    <div class="clear-both"></div>
+                    <div class="plot_control">
+                        <div class="title">Debug 6</div>
+                        <dl>
+                            <dt>X:</dt>
+                            <dd class="x">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="debug7">
+                        <g class="grid x" transform="translate(40, 120)"></g>
+                        <g class="grid y" transform="translate(40, 10)"></g>
+                        <g class="data" transform="translate(41, 10)"></g>
+                        <g class="axis x" transform="translate(40, 120)"></g>
+                        <g class="axis y" transform="translate(40, 10)"></g>
+                    </svg>
+                    <div class="clear-both"></div>
+                    <div class="plot_control">
+                        <div class="title">Debug 7</div>
+                        <dl>
+                            <dt>X:</dt>
+                            <dd class="x">0</dd>
+                        </dl>
+                    </div>
+                    <svg id="debug8">
+                        <g class="grid x" transform="translate(40, 120)"></g>
+                        <g class="grid y" transform="translate(40, 10)"></g>
+                        <g class="data" transform="translate(41, 10)"></g>
+                        <g class="axis x" transform="translate(40, 120)"></g>
+                        <g class="axis y" transform="translate(40, 10)"></g>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+        <div id="subtab-receiver" class="tab-receiver subtab__content">
+            <div class="tab-receiver toolbar_fixed_bottom">
+                <div class="content_wrapper">
+                    <div class="tab_title" data-i18n="tabReceiver"></div>
+                    <div class="note" style="margin-bottom: 20px;">
+                        <div class="note_spacer">
+                            <p data-i18n="receiverHelp"></p>
+                        </div>
+                    </div>
+                    <div class="bars" style="margin-bottom: 40px;">
+                        <div class="rssi_channel_wrapper">
+                            <div class="head" data-i18n="receiverRssiChannel"></div>
+                            <select name="rssi_channel">
+                                <!-- list generated here -->
+                            </select>
+                        </div>
+                        <div class="rssi_channel_wrapper">
+                            <div class="head" data-i18n="receiverRssiSource"></div>
+                            <select name="rssi_source" data-setting="rssi_source"></select>
+                        </div>
+                        <div class="rcmap_wrapper">
+                            <div class="head">
+                                <span data-i18n="receiverChannelMap" data-i18n_title="receiverChannelMapTitle"></span>
+                            </div>
+                            <div class="hybrid_element">
+                                <input type="text" name="rcmap" spellcheck="false" /> 
+                                <select class="hybrid_helper"
+                                    name="rcmap_helper">
+                                    <option value="AETR">Default</option>
+                                    <option value="AETR">Futaba / Hitec</option>
+                                    <option value="TAER">JR / Spektrum / Graupner</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fc_column half" style="margin-left: 20px;">
+                        
+                        <div class="gui_box grey config-section">
+                            <div class="gui_box_titlebar">
+                                <div class="spacer_box_title" data-i18n="configurationReceiver"></div>
+                            </div>
+                            <div class="spacer_box">
+                                <div class="select">
+                                    <select id="receiver_type" data-setting="receiver_type"></select>
+                                    <label for="receiver_type">
+                                        <span data-i18n="receiverType"></span>
+                                    </label>
+                                </div>
+                                <div id="serialrx_provider-wrapper">
+                                    <div class="info-box ok-box" data-i18n="configurationSerialRXHelp"></div>
+                                    <div class="select">
+                                        <select id="serialrx_provider" data-setting="serialrx_provider"></select>
+                                        <label for="serialrx_provider">
+                                            <span data-i18n="configurationSerialRX"></span>
+                                        </label>
+                                    </div>
+                                    <div class="select">
+                                        <select id="serialrx_inverted" data-setting="serialrx_inverted"></select>
+                                        <label for="serialrx_inverted">
+                                            <span data-i18n="serialrx_inverted"></span>
+                                        </label>
+                                    </div><div class="select">
+                                        <select id="serialrx_halfduplex" data-setting="serialrx_halfduplex"></select>
+                                        <label for="serialrx_halfduplex">
+                                            <span data-i18n="serialrx_halfduplex"></span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="gui_box grey config-section config-section--full-width">
+                            <div class="gui_box_titlebar">
+                                <div class="spacer_box_title" data-i18n="rcSmoothing"></div>
+                            </div>
+                            <div class="spacer_box">                   
+                                <div class="number">
+                                    <input id="rc_filter_smoothing_factor" data-setting="rc_filter_smoothing_factor" type="number" data-presentation="range" />
+                                    <label for="rc_filter_smoothing_factor">
+                                        <span data-i18n="rc_filter_smoothing_factor"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="gui_box grey">
+                            <div class="spacer" style="margin-top: 10px; margin-bottom: 10px;">
+                                <div class="cf_column curves" style="width: calc(55% - 10px); min-width: 200px;">
+                                    <div class="throttle_curve">
+                                        <canvas width="200" height="117"></canvas>
+                                    </div>
+                                </div>
+                                <div class="fc_column half tunings">
+                                    <table class="throttle">
+                                        <tr>
+                                            <th data-i18n="receiverThrottleMid"></th>
+                                            <th data-i18n="receiverThrottleExpo"></th>
+                                        </tr>
+                                        <tr>
+                                            <td><input class="controlProfileHighlight" type="number" name="mid" step="0.01" min="0" max="1" /></td>
+                                            <td><input class="controlProfileHighlight" type="number" name="expo" step="0.01" min="0" max="1" /></td>
+                                        </tr>
+                                    </table>
+                                    <table class="deadband">
+                                        <tr>
+                                            <th data-i18n="receiverDeadband"></th>
+                                            <th data-i18n="receiverYawDeadband"></th>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="cf_tip" data-i18n_title="receiverHelpDeadband">
+                                                    <input type="number" name="deadband" step="1" min="0" max="32" />
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="cf_tip" data-i18n_title="receiverHelpYawDeadband">
+                                                    <input type="number" name="yaw_deadband" step="1" min="0" max="100" />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content_toolbar">
+                    <div class="btn update_btn">
+                        <a class="update" href="#" data-i18n="configurationButtonSave"></a>
+                    </div>
+                    <div class="btn sticks_btn">
+                        <a class="sticks" href="#" data-i18n="receiverButtonSticks"></a>
+                    </div>
+                </div>
+            </div>
     </div>
 </div>
